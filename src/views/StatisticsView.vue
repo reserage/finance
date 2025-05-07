@@ -93,6 +93,18 @@
           </div>
         </div>
       </div>
+
+      <!-- 預算對比區塊 -->
+       <div class="col-12 mb-4">
+        <div class="card bg-light p-3">
+          <h2 class="card-title">預算對比</h2>
+          <div class="card-body">
+            <div class="barChartContainer">
+              <PieChart :chart-data="barData" :chart-options="barOptions"/>
+            </div>
+          </div>
+        </div>
+       </div>
     </div>
   </div>
 </template>
