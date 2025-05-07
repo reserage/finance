@@ -56,12 +56,102 @@
 </template>
 
 <script setup>
-// 保持原有的 script 部分不變
+import PieChart from "@/components/PieChart.vue";
+import { ref } from "vue";
+
+const pieData = ref({
+  labels: ["飲食", "投資", "助學金", "其他"],
+  datasets: [
+    {
+      label: "支出",
+      data: [2000, 2000, 25000, 125],
+      backgroundColor: [
+        "rgb(255, 99, 132)",
+        "rgb(54, 162, 235)",
+        "rgb(255, 205, 86)",
+        "rgb(75, 192, 192)",
+      ],
+    },
+  ],
+});
+
+const pieOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "right",
+      align: "cneter",
+      labels: {
+        boxWidth: 20,
+        boxHeight: 10,
+        padding: 20,
+      },
+    },
+  },
+});
+
+const lineData = ref({
+  labels: [
+    "一月",
+    "二月",
+    "三月",
+    "四月",
+    "五月",
+    "六月",
+    "七月",
+    "八月",
+    "九月",
+    "十月",
+    "十一月",
+  ], // X 軸標籤，後端提供
+  datasets: [
+    {
+      label: "支出", // 數據集標籤
+      data: [65, 59, 80, 81, 56, 55, 100], // 數據點，後端提供
+      backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
+      borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
+      borderWidth: 2, // 線條寬度
+      tension: 0.2, // 曲線張力 (0 為直線)
+    },
+  ],
+});
+
+const lineOptions = ref({
+  responsive: true, // 圖表是否響應式
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true, // Y 軸從 0 開始
+    },
+  },
+});
+
+const selectedDate = ref("default");
 </script>
 
 <style scoped>
 /* 移除原有的 grid-container 相關樣式 */
+.outsidePieChartContainer {
+  grid-area: pie;
+}
 
+.pie-chart-container {
+  width: 90%;
+}
+
+
+.summary {
+  grid-area: sum;
+}
+
+.lineChart {
+  grid-area: lin;
+}
+
+.line-chart-container {
+  width: 100%;
+}
 /* 添加一些自定義調整 */
 .line {
   height: 80px;
