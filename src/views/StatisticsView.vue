@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-5">
+  <div class="container mt-5 mb-3">
     <!-- 日期選擇器保持不變 -->
     <div class="form-group">
       <label class="form-label" for="selectedDate">選擇日期</label>
@@ -26,13 +26,55 @@
             </div>
           </div>
         </div>
+
+        <!-- top5類別區塊 -->
+        <div class="new card bg-light p-3 mt-4">
+          <h3 class="card-title">高消費類別</h3>
+          <div class="card-body">
+            <div class="list-group list-group-flush list-group-numbered">
+              <!-- button的內容由後端提供 -->
+              <button
+                type="button"
+                class="list-group-item list-group-item-action active"
+              >
+                lorem
+              </button>
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+              >
+                lorem
+              </button>
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+              >
+                lorem
+              </button>
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+              >
+                lorem
+              </button>
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+              >
+                lorem
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 餅圖區塊 -->
       <div class="col-12 col-lg-4 mb-4">
-        <div class="outsidePieChartContainer bg-light border rounded d-flex flex-column justify-content-center align-items-center p-3 h-100">
+        <div
+          class="outsidePieChartContainer bg-light border rounded d-flex flex-column justify-content-center align-items-center p-3 h-100"
+        >
           <h2>支出分類比例</h2>
-          <div class="pie-chart-container w-100" style="height: 300px;">
+          <div class="pie-chart-container w-100" style="height: 300px">
             <PieChart :chart-data="pieData" :chart-options="pieOptions" />
           </div>
         </div>
@@ -42,7 +84,7 @@
       <div class="col-12 mb-4">
         <div class="lineChart card bg-light p-3">
           <h2 class="card-title">支出趨勢</h2>
-          <div class="line-chart-container card-body" style="height: 300px;">
+          <div class="line-chart-container card-body" style="height: 300px">
             <PieChart
               :chart-data="lineData"
               :chart-options="lineOptions"
@@ -140,7 +182,6 @@ const selectedDate = ref("default");
   width: 90%;
 }
 
-
 .summary {
   grid-area: sum;
 }
@@ -169,5 +210,22 @@ const selectedDate = ref("default");
 .pie-chart-container,
 .line-chart-container {
   position: relative;
+}
+
+.list-group-item {
+  font-size: 1.1rem;
+}
+
+.list-group-item:hover:not(.active):not(.disabled) {
+  background-color: #d0ebff; /* 比預設更明顯的藍色 */
+  font-weight: bold;
+  color: #000; /* 確保文字對比清楚 */
+}
+
+.list-group-item.active {
+  background-color: #0d6efd; /* 更亮眼的藍色 */
+  color: white;
+  font-weight: bold;
+  border-color: #0a58ca;
 }
 </style>
