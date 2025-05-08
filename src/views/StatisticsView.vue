@@ -2,9 +2,12 @@
   <div class="container mt-5 mb-3">
     <!-- 日期選擇器保持不變 -->
     <div class="form-group">
-      <label class="form-label" for="selectedDate">選擇日期</label>
+      <label class="form-label" for="selectedDate">選擇月份</label>
       <select class="form-select" id="selectedDate" v-model="selectedDate">
-        <option selected value="default">下拉選擇日期</option>
+        <option selected value="default">下拉選擇月份</option>
+        <option v-for="month in months" :key="month" :value="month">
+          {{ month }}
+        </option>
       </select>
     </div>
   </div>
@@ -150,7 +153,8 @@
 
 <script setup>
 import PieChart from "@/components/PieChart.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
 const pieData = ref({
   labels: ["飲食", "投資", "助學金", "其他"],
@@ -223,6 +227,19 @@ const lineOptions = ref({
 const selectedDate = ref("default");
 
 const spendingTrendRadio = ref("day");
+
+const months = ref([]);
+
+onMounted(async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:5000/statistics/selectedDate"
+    );
+    months.value = response.data.months;
+  } catch (error) {
+    console.log(error);
+  }
+});
 </script>
 
 <style scoped>
