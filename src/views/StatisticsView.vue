@@ -83,7 +83,46 @@
       <!-- 折線圖區塊 -->
       <div class="col-12 mb-4">
         <div class="lineChart card bg-light p-3">
-          <h2 class="card-title">支出趨勢</h2>
+          <div
+            class="card-title d-flex justify-content-between align-items-center"
+          >
+            <h2>支出趨勢</h2>
+            <div class="btn-group" role="group">
+              <input
+                type="radio"
+                class="btn-check"
+                name="btnradio"
+                id="btnradio1"
+                autocomplete="off"
+                value="day"
+                v-model="spendingTrendRadio"
+              />
+              <label class="btn btn-outline-primary" for="btnradio1">日</label>
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="btnradio"
+                id="btnradio2"
+                autocomplete="off"
+                value="month"
+                v-model="spendingTrendRadio"
+              />
+              <label class="btn btn-outline-primary" for="btnradio2">月</label>
+
+              <input
+                type="radio"
+                class="btn-check"
+                name="btnradio"
+                id="btnradio3"
+                autocomplete="off"
+                value="year"
+                v-model="spendingTrendRadio"
+              />
+              <label class="btn btn-outline-primary" for="btnradio3">年</label>
+            </div>
+          </div>
+
           <div class="line-chart-container card-body" style="height: 300px">
             <PieChart
               :chart-data="lineData"
@@ -95,16 +134,16 @@
       </div>
 
       <!-- 預算對比區塊 -->
-       <div class="col-12 mb-4">
+      <div class="col-12 mb-4">
         <div class="card bg-light p-3">
           <h2 class="card-title">預算對比</h2>
           <div class="card-body">
             <div class="barChartContainer">
-              <PieChart :chart-data="barData" :chart-options="barOptions"/>
+              <PieChart :chart-data="barData" :chart-options="barOptions" />
             </div>
           </div>
         </div>
-       </div>
+      </div>
     </div>
   </div>
 </template>
@@ -182,6 +221,8 @@ const lineOptions = ref({
 });
 
 const selectedDate = ref("default");
+
+const spendingTrendRadio = ref("day");
 </script>
 
 <style scoped>
