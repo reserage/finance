@@ -4,7 +4,6 @@
     <div class="form-group">
       <label class="form-label" for="selectedDate">選擇月份</label>
       <select class="form-select" id="selectedDate" v-model="selectedDate">
-        <option selected value="default">下拉選擇月份</option>
         <option v-for="month in months" :key="month" :value="month">
           {{ month }}
         </option>
@@ -230,12 +229,15 @@ const spendingTrendRadio = ref("day");
 
 const months = ref([]);
 
+// 先從後端取得預設月份的資料
 onMounted(async () => {
   try {
-    const response = await axios.get(
-      "http://localhost:5000/statistics/selectedDate"
-    );
+    const response = await axios.get("http://localhost:5000/statistics/init", {
+      withCredentials: true,
+    });
     months.value = response.data.months;
+    selectedDate.value = months.value[months.value.length - 1]; // 預設選擇最新的月份
+    console.log("後端資料:", response.data);
   } catch (error) {
     console.log(error);
   }
