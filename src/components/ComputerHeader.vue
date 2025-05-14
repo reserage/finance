@@ -5,6 +5,7 @@
       <li><router-link to="/exchange-rate">匯率查詢</router-link></li>
       <li><router-link to="/world-clock">世界時鐘</router-link></li>
       <li><router-link to="/calendar">日曆功能</router-link></li>
+      <li><router-link to="/statistics">統計與分析</router-link></li>
     </ul>
     <ul>
       <li v-if="!isAuthenticated">

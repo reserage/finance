@@ -3,7 +3,7 @@
   <main class="container d-flex flex-column justify-content-start">
     <div id="chart-contaner">
       <PieChart
-        v-show="isDesktop"
+        v-if="showChart"
         :chart-data="chartData"
         :chart-options="chartOptions"
       />
@@ -186,6 +186,7 @@ const expenseCategoryTotals = computed(() => {
       return acc;
     }, {});
 });
+// expenseCategoryTotals.value的可能格式:{餐飲: 2000, 生活: 99, 零食: 166, 投資: 2000}
 
 const incomeCategoryTotals = computed(() => {
   return recordItemArry.value
@@ -198,6 +199,8 @@ const incomeCategoryTotals = computed(() => {
       return acc;
     }, {});
 });
+
+// incomeCategoryTotals.value的可能格式:{薪資: 2000, 助學金: 25000}
 
 fetchData();
 
@@ -284,7 +287,10 @@ onMounted(() => {
   window.addEventListener("resize", handleResize);
 });
 
+const showChart = ref(true);
+
 onBeforeUnmount(() => {
+  showChart.value = false;
   window.removeEventListener("resize", handleResize);
 });
 

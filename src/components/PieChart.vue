@@ -34,7 +34,14 @@ labels: labels, // 定義圖表中每個數據類別的名稱（通常是 X 軸�
 </template>
 
 <script setup>
-import { ref, watch, onMounted, defineProps, onBeforeMount } from "vue";
+import {
+  ref,
+  watch,
+  onMounted,
+  defineProps,
+  onBeforeMount,
+  onBeforeUnmount,
+} from "vue";
 import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
@@ -70,15 +77,19 @@ onMounted(() => {
   renderChart();
 });
 
+onBeforeUnmount(() => {
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+    chartInstance.value = null;
+    console.log("Chart.js 實例已銷毀");
+  }
+});
+
 const renderChart = () => {
   console.log("renderChart() 被呼叫了");
-  if (isDestroyed.value) {
-    console.error("Chart 實例已被銷毀，無法重新渲染。");
-    return;
-  }
 
-  if (!chart.value) {
-    console.error("Canvas 元素未正確掛載");
+  if (!chart.value || !chart.value.parentNode) {
+    console.error("Canvas 元素未正確掛載或已被移除");
     return;
   }
 
@@ -103,10 +114,12 @@ const renderChart = () => {
 };
 
 const updateChart = () => {
-  if (isDestroyed.value) return;
+  if (!chart.value || !chart.value.parentNode) {
+    console.error("Canvas 元素未正確掛載或已被移除，無法更新圖表");
+    return;
+  }
 
-  if (chartInstance.value && chart.value) {
-    // 先销毁再重新渲染
+  if (chartInstance.value) {
     chartInstance.value.destroy();
     renderChart();
   }
@@ -119,14 +132,15 @@ watch(
   () => props.chartData,
   async () => {
     await nextTick(); // 等待 DOM 更新完成
-    if (isDestroyed.value) return;
-
-    if (!chart.value || !document.body.contains(chart.value)) return;
+    if (!chart.value || !chart.value.parentNode) {
+      console.error("Canvas 元素未正確掛載或已被移除，無法更新圖表");
+      return;
+    }
 
     if (!chartInstance.value) {
       renderChart();
     } else {
-      updateChart(); // 直接調用更新邏輯
+      updateChart();
     }
   },
   { deep: true }
