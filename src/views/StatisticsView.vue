@@ -77,6 +77,7 @@
         >
           <h2>支出分類比例</h2>
           <div class="pie-chart-container w-100" style="height: 300px">
+            <!-- 這張圖測試過了，目前上是好的 -->
             <PieChart :chart-data="pieData" :chart-options="pieOptions" />
           </div>
         </div>
@@ -126,11 +127,12 @@
           </div>
 
           <div class="line-chart-container card-body" style="height: 300px">
-            <PieChart
+            <!-- 這個圖有問題， -->
+            <!-- <PieChart
               :chart-data="lineData"
               :chart-options="lineOptions"
               chart-type="line"
-            />
+            /> -->
           </div>
         </div>
       </div>
@@ -141,7 +143,7 @@
           <h2 class="card-title">預算對比</h2>
           <div class="card-body">
             <div class="barChartContainer">
-              <PieChart :chart-data="barData" :chart-options="barOptions" />
+              <!-- <PieChart :chart-data="barData" :chart-options="barOptions" /> -->
             </div>
           </div>
         </div>
@@ -187,41 +189,41 @@ const pieOptions = ref({
   },
 });
 
-const lineData = ref({
-  labels: [
-    "一月",
-    "二月",
-    "三月",
-    "四月",
-    "五月",
-    "六月",
-    "七月",
-    "八月",
-    "九月",
-    "十月",
-    "十一月",
-  ], // X 軸標籤，後端提供
-  datasets: [
-    {
-      label: "支出", // 數據集標籤
-      data: [65, 59, 80, 81, 56, 55, 100], // 數據點，後端提供
-      backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
-      borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
-      borderWidth: 2, // 線條寬度
-      tension: 0.2, // 曲線張力 (0 為直線)
-    },
-  ],
-});
+// const lineData = ref({
+//   labels: [
+//     "一月",
+//     "二月",
+//     "三月",
+//     "四月",
+//     "五月",
+//     "六月",
+//     "七月",
+//     "八月",
+//     "九月",
+//     "十月",
+//     "十一月",
+//   ], // X 軸標籤，後端提供
+//   datasets: [
+//     {
+//       label: "支出", // 數據集標籤
+//       data: [65, 59, 80, 81, 56, 55, 100], // 數據點，後端提供
+//       backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
+//       borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
+//       borderWidth: 2, // 線條寬度
+//       tension: 0.2, // 曲線張力 (0 為直線)
+//     },
+//   ],
+// });
 
-const lineOptions = ref({
-  responsive: true, // 圖表是否響應式
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true, // Y 軸從 0 開始
-    },
-  },
-});
+// const lineOptions = ref({
+//   responsive: true, // 圖表是否響應式
+//   maintainAspectRatio: false,
+//   scales: {
+//     y: {
+//       beginAtZero: true, // Y 軸從 0 開始
+//     },
+//   },
+// });
 
 const selectedDate = ref("default");
 

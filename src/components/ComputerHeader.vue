@@ -8,7 +8,7 @@
       <li><router-link to="/statistics">統計與分析</router-link></li>
     </ul>
     <ul>
-      <li v-if="!isAuthenticated">
+      <li>
         <router-link to="/auth/login">登入</router-link>
       </li>
       <li v-if="!isAuthenticated">
@@ -22,7 +22,7 @@
 </template>
 <script setup>
 import axios from "axios";
-import { ref, onMounted, } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();

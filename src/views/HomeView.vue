@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 import PieChart from "../components/PieChart.vue";
 import ComputerAccountingRecords from "../components/ComputerAccountingRecords.vue";
 import RecordItem from "../components/RecordItem.vue";
@@ -144,12 +144,15 @@ let recordItemArry = ref([
   },
 ]);
 
+const cleanupController = new AbortController();
+
 function fetchData() {
-  console.log("執行fetchData()");
+  console.log("這裡是 HomeView 組件的 fetchData()的開始，執行fetchData()");
 
   return axios
     .get("http://localhost:5000/test/getRecords", {
       withCredentials: true,
+      signal: cleanupController.signal,
     })
     .then((res) => {
       recordItemArry.value = res.data.records.map((item) => {
@@ -163,16 +166,33 @@ function fetchData() {
         };
       });
 
-      console.log("從後端取得的資料res.data.records", res.data.records);
+      console.log(
+        "這裡是 HomeView 組件的 fetchData()，從後端取得的資料res.data.records",
+        res.data.records
+      );
       // console.log("recordItemArry", recordItemArry.value);
       // console.log("typeof recordItemArry", typeof recordItemArry.value);
-      console.log("fetch()結束");
+      console.log("這裡是 HomeView 組件的 fetchData()結束");
     })
     .catch((err) => {
-      console.log("獲取資料失敗", err);
+      if (!axios.isCancel(err)) {
+        console.log("獲取資料失敗", err);
+      }
       throw err;
     });
 }
+
+onBeforeUnmount(() => {
+  cleanupController.abort();
+  window.removeEventListener("resize", handleResize);
+
+  // 强制清理可能的内存泄漏
+  if (window.performance && window.performance.memory) {
+    if (window.performance.memory.usedJSHeapSize > 200 * 1024 * 1024) {
+      console.warn("检测到内存使用过高，建议刷新页面");
+    }
+  }
+});
 
 // 放置支出的類別及金額的物件
 const expenseCategoryTotals = computed(() => {
@@ -202,38 +222,38 @@ const incomeCategoryTotals = computed(() => {
 
 // incomeCategoryTotals.value的可能格式:{薪資: 2000, 助學金: 25000}
 
-fetchData();
-
 // 動態生成 chartData
-const chartData = computed(() => {
-  console.log("變更一次chartData");
+// selectedChartCategory、expenseCategoryTotals、incomeCategoryTotals
 
-  const totals =
-    selectedChartCategory.value === "expense"
-      ? expenseCategoryTotals.value
-      : incomeCategoryTotals.value;
+// const chartData = computed(() => {
+//   console.log("變更一次chartData");
 
-  console.log("totals(動態變更chartData中)", totals);
+//   const totals =
+//     selectedChartCategory.value === "expense"
+//       ? expenseCategoryTotals.value
+//       : incomeCategoryTotals.value;
 
-  const labels = Object.keys(totals);
-  const data = Object.values(totals);
-  console.log("chartData變動結束");
-  return {
-    labels: labels,
-    datasets: [
-      {
-        label: "支出",
-        data: data.length > 0 ? data : [0], // 避免空數據
-        backgroundColor: [
-          "rgb(255, 99, 132)",
-          "rgb(54, 162, 235)",
-          "rgb(255, 205, 86)",
-          "rgb(75, 192, 192)",
-        ],
-      },
-    ],
-  };
-});
+//   console.log("totals(動態變更chartData中)", totals);
+
+//   const labels = Object.keys(totals);
+//   const data = Object.values(totals);
+//   console.log("chartData變動結束");
+//   return {
+//     labels: labels,
+//     datasets: [
+//       {
+//         label: "支出",
+//         data: data.length > 0 ? data : [0], // 避免空數據
+//         backgroundColor: [
+//           "rgb(255, 99, 132)",
+//           "rgb(54, 162, 235)",
+//           "rgb(255, 205, 86)",
+//           "rgb(75, 192, 192)",
+//         ],
+//       },
+//     ],
+//   };
+// });
 
 const chartOptions = ref({
   responsive: true,
@@ -256,6 +276,57 @@ const monthlyExpenditure = computed(() => {
 
 // 綁定下拉選擇的值
 const selectedChartCategory = ref("expense");
+// 如果selectedChartCategory.value有變化，更改chartData的labels和data
+let chartData = ref({
+  labels: [],
+  datasets: [
+    {
+      label: "支出",
+      data: [],
+      backgroundColor: [
+        "rgb(255, 99, 132)",
+        "rgb(54, 162, 235)",
+        "rgb(255, 205, 86)",
+        "rgb(75, 192, 192)",
+      ],
+    },
+  ],
+});
+
+watch(
+  [selectedChartCategory, expenseCategoryTotals, incomeCategoryTotals],
+  ([newCategory, expenseTotals, incomeTotals]) => {
+    console.log("這裡是 HomeView 中的 watch 開始 ，watch: chartData 更新中");
+
+    const totals = newCategory === "expense" ? expenseTotals : incomeTotals;
+    const labels = Object.keys(totals);
+    const data = Object.values(totals);
+
+    chartData.value = {
+      labels,
+      datasets: [
+        {
+          label: newCategory === "expense" ? "支出" : "收入",
+          data: data.length > 0 ? data : [0],
+          backgroundColor: [
+            "rgb(255, 99, 132)",
+            "rgb(54, 162, 235)",
+            "rgb(255, 205, 86)",
+            "rgb(75, 192, 192)",
+          ],
+        },
+      ],
+    };
+
+    console.log(
+      "這裡是 HomeView 中的 watch 結束 ，chartData 更新完成",
+      chartData.value
+    );
+  },
+  {
+    immediate: true, // 預設 watch 一開始就會執行一次
+  }
+);
 
 async function handleModalData() {
   await fetchData(); // 更新畫面
@@ -283,15 +354,15 @@ const handleResize = () => {
 };
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener("resize", handleResize);
+  await fetchData();
 });
 
 const showChart = ref(true);
 
 onBeforeUnmount(() => {
   showChart.value = false;
-  window.removeEventListener("resize", handleResize);
 });
 
 // --------------------------------- 匯率部分
@@ -329,12 +400,10 @@ onBeforeUnmount(() => {
 //   }
 // });
 
-console.log("test");
-
 axios
   .get("http://localhost:5000/auth/checkLogin", { withCredentials: true })
   .then((response) => {
-    console.log("登入成功", response.data);
+    console.log("這裡是HomeView的384行，登入成功", response.data);
   })
   .catch((error) => {
     if (error.response && error.response.status === 401) {

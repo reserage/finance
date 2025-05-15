@@ -34,16 +34,9 @@ labels: labels, // 定義圖表中每個數據類別的名稱（通常是 X 軸�
 </template>
 
 <script setup>
-import {
-  ref,
-  watch,
-  onMounted,
-  defineProps,
-  onBeforeMount,
-  onBeforeUnmount,
-} from "vue";
+import { ref, watch, onMounted, defineProps, onBeforeUnmount } from "vue";
 import { Chart, registerables } from "chart.js";
-
+import { nextTick } from "vue";
 Chart.register(...registerables);
 
 const props = defineProps({
@@ -61,87 +54,90 @@ const props = defineProps({
   },
 });
 
-const chartInstance = ref(null);
+let chartInstance = null;
 const chart = ref(null);
-const isDestroyed = ref(false);
+const isMounted = ref(false);
+const pendingRender = ref(false);
 
-onBeforeMount(() => {
-  isDestroyed.value = false;
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
+// const isDestroyed = ref(false);
+
+// onBeforeMount(() => {
+//   // isDestroyed.value = false;
+//   if (chartInstance.value) {
+//     chartInstance.value.destroy();
+//     chartInstance.value = null;
+//   }
+// });
+///
+
+onMounted(async () => {
+  console.log("chart.value", chart.value);
+
+  await nextTick();
+  isMounted.value = true;
+  safeRender();
 });
-
-onMounted(() => {
-  renderChart();
-});
-
+///
 onBeforeUnmount(() => {
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-    console.log("Chart.js 實例已銷毀");
+  isMounted.value = false;
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
   }
 });
 
-const renderChart = () => {
-  console.log("renderChart() 被呼叫了");
+// 安全渲染函数
+const safeRender = async () => {
+  if (!isMounted.value || pendingRender.value) return;
 
-  if (!chart.value || !chart.value.parentNode) {
-    console.error("Canvas 元素未正確掛載或已被移除");
-    return;
-  }
+  pendingRender.value = true;
+  requestAnimationFrame(async () => {
+    try {
+      if (!chart.value || !document.body.contains(chart.value)) {
+        throw new Error("Canvas element not in DOM");
+      }
 
-  const ctx = chart.value.getContext("2d");
-  if (!ctx) {
-    console.error("Canvas 上下文獲取失敗");
-    return;
-  }
+      // 等待瀏覽器完成銷毀
 
-  // 銷毀舊圖表實例
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    chartInstance.value = null;
-  }
+      setTimeout(() => {
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
 
-  chartInstance.value = new Chart(ctx, {
-    type: props.chartType,
-    data: props.chartData,
-    options: props.chartOptions,
+        const ctx = chart.value.getContext("2d");
+        chartInstance = new Chart(ctx, {
+          type: props.chartType,
+          data: props.chartData,
+          options: props.chartOptions,
+        });
+      }, 20);
+    } catch (error) {
+      console.warn("Chart render aborted:", error.message);
+    } finally {
+      pendingRender.value = false;
+    }
   });
-  console.log("renderChart() 結束，圖表實例已建立。");
 };
 
-const updateChart = () => {
-  if (!chart.value || !chart.value.parentNode) {
-    console.error("Canvas 元素未正確掛載或已被移除，無法更新圖表");
-    return;
-  }
+// const updateChart = () => {
+//   if (!chart.value || !chart.value.parentNode) {
+//     console.error("Canvas 元素未正確掛載或已被移除，無法更新圖表");
+//     return;
+//   }
 
-  if (chartInstance.value) {
-    chartInstance.value.destroy();
-    renderChart();
-  }
-};
+//   if (chartInstance.value) {
+//     chartInstance.value.destroy();
+//     renderChart();
+//   }
+// };
 
 // 修改監聽邏輯，使用 nextTick
-import { nextTick } from "vue";
 
 watch(
   () => props.chartData,
-  async () => {
-    await nextTick(); // 等待 DOM 更新完成
-    if (!chart.value || !chart.value.parentNode) {
-      console.error("Canvas 元素未正確掛載或已被移除，無法更新圖表");
-      return;
-    }
-
-    if (!chartInstance.value) {
-      renderChart();
-    } else {
-      updateChart();
-    }
+  () => {
+    nextTick(safeRender);
   },
   { deep: true }
 );

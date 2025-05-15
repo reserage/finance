@@ -131,7 +131,7 @@
 <script setup>
 import axios from "axios";
 import CategoryManagementModal from "./CategoryManagementModal.vue";
-import { ref, computed, defineEmits, onMounted } from "vue";
+import { ref, computed, defineEmits, onMounted, onBeforeUnmount } from "vue";
 
 // 定義 Modal 的狀態
 const isModalOpen = ref(false);
@@ -153,15 +153,25 @@ onMounted(() => {
   fetchCategories();
 });
 
+const modalController = ref(new AbortController());
+
+onBeforeUnmount(() => {
+  // 清理模态框相关资源
+  if (modalController.value) {
+    modalController.value.abort();
+  }
+});
+
 // 用來從後端獲取類別數據的函數，再將類別名放在 incomeCategories 和 expenseCategories 中
 // 使用時機: 組件掛載時 以及 CategoryManagementModal 中新增類別後再次打開management modal 時
 async function fetchCategories() {
-  console.log("fetchCategories()被觸發了");
+  console.log("這裡是ComputerRecordModal 組件，fetchCategories() 的開始");
   try {
     const res = await axios.get(
       "http://localhost:5000/category/getCategories",
       {
         withCredentials: true,
+        signal: modalController.value.signal,
       }
     );
     const categories = res.data.categories;
@@ -170,7 +180,11 @@ async function fetchCategories() {
     incomeCategories.value = categories.filter((c) => c.isIncome);
     expenseCategories.value = categories.filter((c) => !c.isIncome);
 
-    console.log("從後端取出的categories", categories);
+    console.log(
+      "這裡是ComputerRecordModal 組件，從後端取出的categories",
+      categories
+    );
+    console.log("這裡是ComputerRecordModal 組件，fetchCategories() 的結束");
   } catch (err) {
     console.error("categories獲取失敗", err);
   }

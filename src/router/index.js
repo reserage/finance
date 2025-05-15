@@ -45,4 +45,13 @@ const router = createRouter({
   routes,
 });
 
+// 添加全局路由守卫
+router.beforeEach((to, from, next) => {
+  if (from.matched.some(record => record.meta.cleanup)) {
+    // 这里可以添加额外的清理逻辑
+    console.log("执行特殊路由清理");
+  }
+  next();
+});
+
 export default router;
