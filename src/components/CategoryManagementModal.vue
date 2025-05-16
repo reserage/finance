@@ -206,6 +206,9 @@ const saveCategories = async () => {
     tempExpenseCategories.value
   );
 
+  console.warn("saveCategories內的 allIncomeCategory:", allIncomeCategory);
+  console.warn("saveCategories內的 allExpenseCategory:", allExpenseCategory);
+
   await axios.post(
     "http://localhost:5000/category/update",
     {
@@ -222,6 +225,15 @@ const saveCategories = async () => {
 
   deletedCategories = [];
 
+  allIncomeCategory = [];
+  allExpenseCategory = [];
+
+  console.warn("saveCategories結束前的 allIncomeCategory:", allIncomeCategory);
+  console.warn(
+    "saveCategories結束前的 allExpenseCategory:",
+    allExpenseCategory
+  );
+
   emit("categories-updated");
   closeCategoryManager();
   console.log("結束saveCategories方法");
@@ -234,8 +246,8 @@ const incomeTempName = ref("");
 const expenseTempName = ref("");
 
 // 設定用來傳給後端的類別資料，這兩個變數用來存放新增的類別名稱
-const allIncomeCategory = [];
-const allExpenseCategory = [];
+let allIncomeCategory = [];
+let allExpenseCategory = [];
 
 // 用於button標籤的方法，當按下新增類別按鈕時觸發
 const addCategory = (type) => {
@@ -273,6 +285,17 @@ async function addingTempCategory(category) {
   }
   incomeTempName.value = ""; // 清空輸入框
   expenseTempName.value = "";
+
+  console.warn(
+    "addingTempCategory方法內的 allIncomeCategory:",
+    allIncomeCategory
+  );
+  console.warn(
+    "addingTempCategory方法內的 allExpenseCategory:",
+    allExpenseCategory
+  );
+
+  console.log("addingTempCategory方法 結束", category);
 }
 let deletedCategories = [];
 // 刪除類別
