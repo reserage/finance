@@ -4,7 +4,7 @@
     <div class="form-group">
       <label class="form-label" for="selectedDate">選擇月份</label>
       <select class="form-select" id="selectedDate" v-model="selectedDate">
-        <option v-for="month in months" :key="month" :value="month">
+        <option v-for="month in optionsMonths" :key="month" :value="month">
           {{ month }}
         </option>
       </select>
@@ -19,12 +19,12 @@
           <div class="d-flex justify-content-evenly">
             <div class="expendtiure">
               <h2>本月收入</h2>
-              <h3>$25000</h3>
+              <h3>{{ currentMonthIncome }}</h3>
             </div>
             <div class="line border"></div>
             <div class="income">
               <h2>本月支出</h2>
-              <h3>$19000</h3>
+              <h3>{{ currentMonthExpenditure }}</h3>
             </div>
           </div>
         </div>
@@ -33,37 +33,15 @@
         <div class="new card bg-light p-3 mt-4">
           <h3 class="card-title">高消費類別</h3>
           <div class="card-body">
-            <div class="list-group list-group-flush list-group-numbered">
+            <div class="list-group list-group-flush">
               <!-- button的內容由後端提供 -->
               <button
                 type="button"
-                class="list-group-item list-group-item-action active"
-              >
-                lorem
-              </button>
-              <button
-                type="button"
                 class="list-group-item list-group-item-action"
+                v-for="(category, index) in highSpendingCategories"
+                :key="index"
               >
-                lorem
-              </button>
-              <button
-                type="button"
-                class="list-group-item list-group-item-action"
-              >
-                lorem
-              </button>
-              <button
-                type="button"
-                class="list-group-item list-group-item-action"
-              >
-                lorem
-              </button>
-              <button
-                type="button"
-                class="list-group-item list-group-item-action"
-              >
-                lorem
+                <h5>{{ index + 1 + "." + category[0] }}</h5>
               </button>
             </div>
           </div>
@@ -128,11 +106,11 @@
 
           <div class="line-chart-container card-body" style="height: 300px">
             <!-- 這個圖有問題， -->
-            <!-- <PieChart
+            <PieChart
               :chart-data="lineData"
               :chart-options="lineOptions"
               chart-type="line"
-            /> -->
+            />
           </div>
         </div>
       </div>
@@ -154,15 +132,18 @@
 
 <script setup>
 import PieChart from "@/components/PieChart.vue";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import axios from "axios";
 
-const pieData = ref({
-  labels: ["飲食", "投資", "助學金", "其他"],
+let pieLabels = ref([]);
+let pieMoney = ref([]);
+
+const pieData = computed(() => ({
+  labels: pieLabels.value,
   datasets: [
     {
       label: "支出",
-      data: [2000, 2000, 25000, 125],
+      data: pieMoney.value,
       backgroundColor: [
         "rgb(255, 99, 132)",
         "rgb(54, 162, 235)",
@@ -171,7 +152,7 @@ const pieData = ref({
       ],
     },
   ],
-});
+}));
 
 const pieOptions = ref({
   responsive: true,
@@ -189,47 +170,40 @@ const pieOptions = ref({
   },
 });
 
-// const lineData = ref({
-//   labels: [
-//     "一月",
-//     "二月",
-//     "三月",
-//     "四月",
-//     "五月",
-//     "六月",
-//     "七月",
-//     "八月",
-//     "九月",
-//     "十月",
-//     "十一月",
-//   ], // X 軸標籤，後端提供
-//   datasets: [
-//     {
-//       label: "支出", // 數據集標籤
-//       data: [65, 59, 80, 81, 56, 55, 100], // 數據點，後端提供
-//       backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
-//       borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
-//       borderWidth: 2, // 線條寬度
-//       tension: 0.2, // 曲線張力 (0 為直線)
-//     },
-//   ],
-// });
+let lineLabels = ref([]);
+let lineMoney = ref([]);
 
-// const lineOptions = ref({
-//   responsive: true, // 圖表是否響應式
-//   maintainAspectRatio: false,
-//   scales: {
-//     y: {
-//       beginAtZero: true, // Y 軸從 0 開始
-//     },
-//   },
-// });
+const lineData = computed(() => ({
+  labels: lineLabels.value, // X 軸標籤，後端提供
+  datasets: [
+    {
+      label: "支出", // 數據集標籤
+      data: lineMoney.value, // 數據點，後端提供
+      backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
+      borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
+      borderWidth: 2, // 線條寬度
+      tension: 0.2, // 曲線張力 (0 為直線)
+    },
+  ],
+}));
+
+const lineOptions = ref({
+  responsive: true, // 圖表是否響應式
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true, // Y 軸從 0 開始
+    },
+  },
+});
 
 const selectedDate = ref("default");
+const spendingTrendRadio = ref("month");
+const optionsMonths = ref([]);
 
-const spendingTrendRadio = ref("day");
-
-const months = ref([]);
+const currentMonthIncome = ref("");
+const currentMonthExpenditure = ref();
+const highSpendingCategories = ref([]);
 
 // 先從後端取得預設月份的資料
 onMounted(async () => {
@@ -237,13 +211,65 @@ onMounted(async () => {
     const response = await axios.get("http://localhost:5000/statistics/init", {
       withCredentials: true,
     });
-    months.value = response.data.months;
-    selectedDate.value = months.value[months.value.length - 1]; // 預設選擇最新的月份
+    optionsMonths.value = response.data.months;
+    selectedDate.value = optionsMonths.value[optionsMonths.value.length - 1]; // 預設選擇最新的月份
     console.log("後端資料:", response.data);
+
+    // 給要用到的資料賦值
+    const backendData = response.data.allData.data;
+    currentMonthIncome.value = backendData.totalIncome;
+    currentMonthExpenditure.value = backendData.totalExpense;
+    highSpendingCategories.value = backendData.sorted;
+    pieLabels.value = backendData.sorted.map((item) => item[0]);
+    pieMoney.value = backendData.sorted.map((item) => item[1]);
+
+    getAndSetLineChartData(spendingTrendRadio.value, selectedDate.value);
   } catch (error) {
     console.log(error);
   }
 });
+
+watch(selectedDate, async (newValue) => {
+  const response = await axios.get("http://localhost:5000/statistics", {
+    params: { selectedDate: newValue },
+    withCredentials: true,
+  });
+  console.log("後端資料:", response.data);
+
+  const backendData = response.data.data;
+  currentMonthIncome.value = backendData.totalIncome;
+  currentMonthExpenditure.value = backendData.totalExpense;
+  highSpendingCategories.value = backendData.sorted;
+
+  pieLabels.value = backendData.sorted.map((item) => item[0]);
+  pieMoney.value = backendData.sorted.map((item) => item[1]);
+
+  getAndSetLineChartData(spendingTrendRadio.value, newValue);
+});
+
+watch(spendingTrendRadio, (newValue) => {
+  getAndSetLineChartData(newValue, selectedDate.value);
+});
+
+async function getAndSetLineChartData(spendingTrendRadio, selectedDate) {
+  const lineResponse = await axios.get(
+    "http://localhost:5000/statistics/line",
+    {
+      params: {
+        selectedDate: selectedDate,
+        spendingTrendRadio: spendingTrendRadio,
+      },
+      withCredentials: true,
+    }
+  );
+  const lineBackendData = lineResponse.data;
+  if (spendingTrendRadio === "month") {
+    lineLabels.value = lineBackendData.map((item) => item.week.slice(-1));
+  } else {
+    lineLabels.value = lineBackendData.map((item) => item.month.slice(-2));
+  }
+  lineMoney.value = lineBackendData.map((item) => item.totalAmount);
+}
 </script>
 
 <style scoped>
