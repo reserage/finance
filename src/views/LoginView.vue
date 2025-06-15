@@ -53,7 +53,8 @@ const login = async () => {
     // 登入成功後的處理，如重定向
     router.push("/");
   } catch (error) {
-    console.error("登入失敗", error);
+    console.log("error: ", error);
+    alert(error.response.data?.message || "登入失敗");
   }
 };
 

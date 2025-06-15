@@ -66,7 +66,7 @@
         title="測試"
         value="logout"
         v-if="isAuthenticated"
-        @click="currentView = 'ExampleView'"
+        @click="currentView = 'AccountBookView'"
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-logout"
