@@ -42,7 +42,12 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-btn text class="fs-5">編輯預算</v-btn>
+            <v-btn
+              text
+              class="fs-5"
+              @click.prevent="openSettingBudgetDialog(category.budget)"
+              >編輯預算</v-btn
+            >
           </v-card-actions>
         </v-card>
       </v-card-text>
@@ -53,13 +58,33 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="isSettingBudgetDialog" max-width="500px">
+    <v-card>
+      <v-card-title class="headline">設定預算</v-card-title>
+      <v-card-text>
+        <v-text-field v-model="setNewBudget" label="設定預算" type="number" />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn text @click="isSettingBudgetDialog = false">取消</v-btn>
+        <v-btn text color="primary" @click="isSettingBudgetDialog = false"
+          >確認</v-btn
+        >
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 <script setup>
-import { defineModel, defineEmits } from "vue";
+import { ref, defineModel, defineEmits } from "vue";
 
 const emit = defineEmits(["close"]);
 
 const isShowDialog = defineModel();
+
+const isSettingBudgetDialog = ref(false);
+
+const setNewBudget = ref(0);
 
 // budget 屬性等於 -1 時，代表沒有設定該預算
 const fakeCategories = [
@@ -90,6 +115,11 @@ function getCategoryStatusColor(category) {
   if (ratio < 0.5) return "green";
   else if (ratio <= 0.75) return "orange";
   else return "red";
+}
+
+function openSettingBudgetDialog(currentBudget) {
+  isSettingBudgetDialog.value = true;
+  setNewBudget.value = currentBudget;
 }
 </script>
 

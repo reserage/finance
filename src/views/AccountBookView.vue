@@ -1,9 +1,12 @@
 <template>
+  <!-- 選擇選分下拉選單 -->
   <v-autocomplete
     v-model="year"
     :items="years"
     label="選擇年份"
   ></v-autocomplete>
+
+  <!-- 所有記帳本 -->
   <v-row>
     <v-col
       class=""
@@ -24,13 +27,15 @@
       </v-card>
     </v-col>
   </v-row>
+
+  <!-- 修改或新增記帳本按鈕 -->
   <v-row
     ><v-col cols="12" class="d-flex justify-center"
       ><v-btn
         prepend-icon="mdi-plus"
         class="w-75"
         size="large"
-        @click="handleChange"
+        @click="tempName"
       >
         修改或新增記帳本
       </v-btn></v-col
@@ -48,21 +53,51 @@ const bookInfo = ref([
     name: "1月記帳本",
     description: "這是一個範例視圖，您可以在此處添加任何內容。",
   },
-  { name: "2月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "3月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "4月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
+  {
+    name: "2月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "3月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "4月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
   {
     name: "5月記帳本",
     description: "這是一個範例視圖，您可以在此處添加任何內容。",
     bookId: "6839eed7337b98e646e81d1a",
   },
-  { name: "6月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "7月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "8月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "9月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "10月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "11月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
-  { name: "12月記帳本", description: "這是一個範例視圖，您可以在此處添加任何內容。" },
+  {
+    name: "6月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "7月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "8月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "9月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "10月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "11月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
+  {
+    name: "12月記帳本",
+    description: "這是一個範例視圖，您可以在此處添加任何內容。",
+  },
 ]);
 console.log(bookInfo.value);
 
@@ -89,13 +124,12 @@ async function getBook() {
     console.log("response.data", response.data);
 
     bookInfo.value = response.data.gotBookKeeping;
-    console.log("更新後的bookInfo: ",bookInfo.value)
+    console.log("更新後的bookInfo: ", bookInfo.value);
   } catch (e) {
-    if(e.status == 401){
+    if (e.status == 401) {
       alert(e.response.data.message);
-      router.push('/auth/login');
+      router.push("/auth/login");
     }
-    
   }
 }
 onMounted(() => {
@@ -106,6 +140,10 @@ watch(year, (newValue) => {
   getBook(newValue);
   console.log(newValue);
 });
+
+const tempName = () => {
+  alert("功能還未做");
+};
 
 // // 在這裡測試實際不是這樣的
 // const name = "測試記帳本";
