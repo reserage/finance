@@ -208,7 +208,7 @@ const highSpendingCategories = ref([]);
 // 先從後端取得預設月份的資料
 onMounted(async () => {
   try {
-    const response = await axios.get("http://localhost:5000/statistics/init", {
+    const response = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/statistics/init`, {
       withCredentials: true,
     });
     optionsMonths.value = response.data.months;
@@ -230,7 +230,7 @@ onMounted(async () => {
 });
 
 watch(selectedDate, async (newValue) => {
-  const response = await axios.get("http://localhost:5000/statistics", {
+  const response = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/statistics`, {
     params: { selectedDate: newValue },
     withCredentials: true,
   });
@@ -253,7 +253,7 @@ watch(spendingTrendRadio, (newValue) => {
 
 async function getAndSetLineChartData(spendingTrendRadio, selectedDate) {
   const lineResponse = await axios.get(
-    "http://localhost:5000/statistics/line",
+    `${process.env.VUE_APP_BACKEND_API_URL}/statistics/line`,
     {
       params: {
         selectedDate: selectedDate,

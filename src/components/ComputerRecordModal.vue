@@ -168,7 +168,7 @@ async function fetchCategories() {
   console.log("這裡是ComputerRecordModal 組件，fetchCategories() 的開始");
   try {
     const res = await axios.get(
-      "http://localhost:5000/category/getCategories",
+      `${process.env.VUE_APP_BACKEND_API_URL}/category/getCategories`,
       {
         withCredentials: true,
         signal: modalController.value.signal,

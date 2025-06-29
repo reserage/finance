@@ -56,7 +56,7 @@ const email = ref("");
 const register = async () => {
   try {
     const response = await axios.post(
-      "http://localhost:5000/auth/register",
+      `${process.env.VUE_APP_BACKEND_API_URL}/auth/register`,
       {
         username: userName.value,
         password: password.value,

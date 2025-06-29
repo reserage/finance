@@ -150,7 +150,7 @@ function fetchData() {
   console.log("這裡是 HomeView 組件的 fetchData()的開始，執行fetchData()");
 
   return axios
-    .get("http://localhost:5000/test/getRecords", {
+    .get(`${process.env.VUE_APP_BACKEND_API_URL}/test/getRecords`, {
       withCredentials: true,
       signal: cleanupController.signal,
     })
@@ -337,7 +337,7 @@ const handleDeleteItem = async (id) => {
   console.log("handleDeleteItem()執行");
   console.log("刪除的項目ID:", id);
   try {
-    await axios.delete(`http://localhost:5000/test/deleteRecord/${id}`, {
+    await axios.delete(`${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecord/${id}`, {
       withCredentials: true,
     });
     console.log("刪除成功");
@@ -401,7 +401,7 @@ onBeforeUnmount(() => {
 // });
 
 axios
-  .get("http://localhost:5000/auth/checkLogin", { withCredentials: true })
+  .get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, { withCredentials: true })
   .then((response) => {
     console.log("這裡是HomeView的384行，登入成功", response.data);
   })

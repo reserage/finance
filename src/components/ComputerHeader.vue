@@ -33,7 +33,7 @@ const user = ref({});
 // 檢查登入狀態
 async function checkAuth() {
   try {
-    const response = await axios.get("http://localhost:5000/auth/checkLogin", {
+    const response = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
       withCredentials: true,
     });
 

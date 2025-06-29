@@ -107,7 +107,7 @@ let userInfo = ref({});
 const isAuthenticated = ref(false);
 onMounted(async () => {
   try {
-    const res = await axios.get("http://localhost:5000/auth/checkLogin", {
+    const res = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
       withCredentials: true,
     });
     isAuthenticated.value = res.data.isAuthenticated;
@@ -123,7 +123,7 @@ watch(
   () => route.fullPath,
   async () => {
     try {
-      const res = await axios.get("http://localhost:5000/auth/checkLogin", {
+      const res = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
         withCredentials: true,
       });
       isAuthenticated.value = res.data.isAuthenticated;
@@ -139,7 +139,7 @@ watch(
 function handleLogOut() {
   axios
     .post(
-      "http://localhost:5000/auth/logout",
+      `${process.env.VUE_APP_BACKEND_API_URL}/auth/logout`,
       {},
       {
         withCredentials: true,

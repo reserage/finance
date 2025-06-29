@@ -42,7 +42,7 @@ const email = ref("");
 const login = async () => {
   try {
     const response = await axios.post(
-      "http://localhost:5000/auth/login",
+      `${process.env.VUE_APP_BACKEND_API_URL}/auth/login`,
       {
         password: password.value,
         email: email.value,

@@ -224,7 +224,7 @@ const deleteCategoryAndParentsComponentRefresh = async (categoryId) => {
     console.log("Deleting category with ID: ", categoryId);
     try {
       await axios.delete(
-        `http://localhost:5000/category/deleteCategory/${categoryId}`,
+        `${process.env.VUE_APP_BACKEND_API_URL}/category/deleteCategory/${categoryId}`,
         { withCredentials: true }
       );
     } catch (e) {

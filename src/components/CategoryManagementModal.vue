@@ -210,7 +210,7 @@ const saveCategories = async () => {
   console.warn("saveCategories內的 allExpenseCategory:", allExpenseCategory);
 
   await axios.post(
-    "http://localhost:5000/category/update",
+    `${process.env.VUE_APP_BACKEND_API_URL}/category/update`,
     {
       incomeCategories: allIncomeCategory,
       expenseCategories: allExpenseCategory,
@@ -218,7 +218,7 @@ const saveCategories = async () => {
     { withCredentials: true }
   );
 
-  await axios.delete("http://localhost:5000/category/deleteCategory", {
+  await axios.delete(`${process.env.VUE_APP_BACKEND_API_URL}/category/deleteCategory`, {
     data: { deletedCategories: deletedCategories },
     withCredentials: true,
   });

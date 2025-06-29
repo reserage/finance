@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import {ref} from "vue"
+import { ref } from "vue";
 
 export const useTransactionStore = defineStore("transaction", () => {
   const selectedBook = ref(null);
@@ -12,5 +12,5 @@ export const useTransactionStore = defineStore("transaction", () => {
     clearSelectedBook() {
       selectedBook.value = null;
     },
-  }
+  };
 });

@@ -203,7 +203,7 @@ const isShowSetBudgetDialog = ref(false);
 const cleanupController = new AbortController();
 const fetchRecordsByBook = async (bookId) => {
   const response = await axios.get(
-    "http://localhost:5000/test/getRecordsByBook",
+    `${process.env.VUE_APP_BACKEND_API_URL}/test/getRecordsByBook`,
     {
       params: { bookId },
       withCredentials: true,
@@ -224,7 +224,7 @@ const allCategoriesData = ref([]); // 用來存放所有類別的資料
 
 const fetchCategoryByUser = async () => {
   const response = await axios.get(
-    "http://localhost:5000/category/getCategories",
+    `${process.env.VUE_APP_BACKEND_API_URL}/category/getCategories`,
     {
       withCredentials: true,
       signal: cleanupController.signal,
@@ -376,7 +376,7 @@ const showEachRecordDeleteIcon = ref(false);
 function deleteRecord(recordId) {
   if (confirm("確定要刪除這筆記帳嗎？")) {
     axios
-      .delete("http://localhost:5000/test/deleteRecordByBook", {
+      .delete(`${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecordByBook`, {
         params: { recordId, bookId: TransactionStore.selectedBook },
         withCredentials: true,
       })

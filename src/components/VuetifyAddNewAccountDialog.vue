@@ -79,7 +79,7 @@ const submitForm = async () => {
   isShowDialogForm.value = false;
   try {
     const response = await axios.post(
-      "http://localhost:5000/test/addRecordByBook",
+      `${process.env.VUE_APP_BACKEND_API_URL}/test/addRecordByBook`,
       {
         category: form.value.category,
         amount: form.value.amount,

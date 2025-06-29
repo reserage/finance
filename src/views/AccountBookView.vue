@@ -115,7 +115,7 @@ function handleClick(bookId) {
 async function getBook() {
   try {
     const response = await axios.get(
-      "http://localhost:5000/bookKeeping/getbookKeepings",
+      `${process.env.VUE_APP_BACKEND_API_URL}/bookKeeping/getbookKeepings`,
       {
         params: { year: year.value },
         withCredentials: true,
