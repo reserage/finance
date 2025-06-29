@@ -60,6 +60,6 @@ const login = async () => {
 
 const loginWithGoogle = () => {
   // 導向後端的 Google OAuth URL
-  window.location.href = "http://localhost:5000/auth/google";
+  window.location.href = `${process.env.VUE_APP_BACKEND_API_URL}/auth/google`;
 };
 </script>
