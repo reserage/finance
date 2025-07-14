@@ -68,7 +68,6 @@ const bookInfo = ref([
   {
     name: "5月記帳本",
     description: "這是一個範例視圖，您可以在此處添加任何內容。",
-    bookId: "6839eed7337b98e646e81d1a",
   },
   {
     name: "6月記帳本",

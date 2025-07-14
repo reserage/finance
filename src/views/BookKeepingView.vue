@@ -89,7 +89,7 @@
               <div
                 class="deleteIcon"
                 v-if="showEachRecordDeleteIcon"
-                @click="deleteRecord(record._id)"
+                @click="deleteRecord(record)"
               >
                 <v-icon>mdi-delete</v-icon>
               </div>
@@ -166,17 +166,19 @@
   <VuetifyForm
     v-model="isShowDialogForm"
     :selectItems="selectItems"
+    :all-categories-data="allCategoriesData"
     @fetch-records-by-book="fetchRecordsByBook(TransactionStore.selectedBook)"
   />
 
   <VuetifyCategoryManagement
     v-model:isShowDialogCategoryManagement="isShowCategoryManagementComponent"
-    :allCategoriesData="allCategoriesData"
+    :all-categories-data="allCategoriesData"
     @parent-component-refresh-category-data="fetchCategoryByUser"
   />
 
   <VuetifySetBudgetDialog
     v-model="isShowSetBudgetDialog"
+    :all-categories-data="allCategoriesData"
     @close="isShowSetBudgetDialog = false"
   />
 </template>
@@ -248,13 +250,17 @@ const recordsByDate = computed(() => {
     grouped[dateOnly].push(record);
   });
 
-  // 轉成陣列並依日期排序（新到舊）
-  const result = Object.entries(grouped).sort(
-    (a, b) => new Date(b[0]) - new Date(a[0])
-  ); // 依日期降冪排序
+  const result = Object.entries(grouped)
+    .map(([date, records]) => {
+      // 每一天內的資料依照時間降冪排序（從新到舊）
+      records.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return [date, records];
+    })
+    .sort((a, b) => new Date(b[0]) - new Date(a[0])); // 日期排序（從新到舊)
 
   return result;
 });
+
 
 const TransactionStore = useTransactionStore();
 if (TransactionStore.selectedBook) {
@@ -373,13 +379,31 @@ const icons = {
 
 const showEachRecordDeleteIcon = ref(false);
 
-function deleteRecord(recordId) {
+async function deleteRecord(record) {
+  console.log("record", record);
   if (confirm("確定要刪除這筆記帳嗎？")) {
-    axios
-      .delete(`${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecordByBook`, {
-        params: { recordId, bookId: TransactionStore.selectedBook },
-        withCredentials: true,
-      })
+    // 找到v-select選取的category所對應的Object
+    const findTheCategoryObjecte = computed(() => {
+      return allCategoriesData.value.find(
+        (item) => item.name === record.category
+      );
+    });
+    console.log("findTheCategoryObjecte: ", findTheCategoryObjecte.value);
+
+    await axios
+      .delete(
+        `${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecordByBook`,
+        {
+          params: {
+            recordId: record._id,
+            bookId: TransactionStore.selectedBook,
+            categoryId: findTheCategoryObjecte.value._id,
+            isIncome: record.isIncome,
+            amount: record.amount,
+          },
+          withCredentials: true,
+        }
+      )
       .then((response) => {
         console.log("刪除成功:", response.data);
         // 刪除後重新獲取記帳資料

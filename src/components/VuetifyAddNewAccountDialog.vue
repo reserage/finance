@@ -5,8 +5,8 @@
       <v-card-text>
         <v-form ref="formRef">
           <v-radio-group inline v-model="form.isIncome">
-            <v-radio label="支出" value="expense"></v-radio>
-            <v-radio label="收入" value="income"></v-radio>
+            <v-radio label="支出" :value="false"></v-radio>
+            <v-radio label="收入" :value="true"></v-radio>
           </v-radio-group>
           <v-text-field
             v-model="form.amount"
@@ -36,10 +36,18 @@
 <script setup>
 import { useTransactionStore } from "@/stores/useTransactionStore";
 import axios from "axios";
-import { defineModel, defineProps, defineEmits, watch, ref } from "vue";
+import {
+  defineModel,
+  defineProps,
+  defineEmits,
+  watch,
+  ref,
+  computed,
+} from "vue";
 
 const props = defineProps({
   selectItems: Array,
+  allCategoriesData: Array,
 });
 
 const emit = defineEmits(["fetchRecordsByBook"]);
@@ -48,7 +56,7 @@ const isShowDialogForm = defineModel();
 
 const TransactionStore = useTransactionStore();
 const form = ref({
-  isIncome: "expense",
+  isIncome: false,
   amount: null,
   category: "",
   note: "",
@@ -62,6 +70,15 @@ watch(
   },
   { deep: true }
 );
+
+// 找到v-select選取的category所對應的Object
+const findTheCategoryObjecte = computed(() => {
+  return props.allCategoriesData.find(
+    (item) => item.name === form.value.category
+  );
+});
+
+
 
 const submitForm = async () => {
   if (
@@ -87,6 +104,7 @@ const submitForm = async () => {
         date: form.value.date,
         isIncome: form.value.isIncome,
         bookId: TransactionStore.selectedBook,
+        categoryId: findTheCategoryObjecte.value._id,
       },
       {
         withCredentials: true,
@@ -94,6 +112,7 @@ const submitForm = async () => {
     );
     console.log("savedRecordId: ", response.data.savedRecordId);
     console.log("response.data.updatedBook: ", response.data.updatedBook);
+    // console.log("findTheCategoryObject: ", findTheCategoryObjecte);
     emit("fetchRecordsByBook");
   } catch (error) {
     console.log("Error submitting form:", error);
@@ -101,7 +120,7 @@ const submitForm = async () => {
 
   // 清空表單
   form.value = {
-    isIncome: "expense",
+    isIncome: false,
     amount: null,
     category: "",
     note: "",

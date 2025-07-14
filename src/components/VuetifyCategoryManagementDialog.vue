@@ -4,8 +4,33 @@
       <v-card-title class="text-h6">分類管理</v-card-title>
       <v-card-text class="d-flex">
         <!-- 桌面板畫面 -->
-        <v-row v-if="!isMobile"
-          ><v-col cols="12" lg="6"
+        <v-row v-if="!isMobile">
+          <!-- //desc 新增新分類的form -->
+          <v-expand-transition mode="out-in">
+            <div v-if="isShowAddForm" class="w-100">
+              <v-col class="mb-4" cols="12">
+                <v-text-field
+                  label="分類名稱"
+                  v-model="newCategory.name"
+                  required
+                ></v-text-field>
+                <v-radio-group
+                  label="分類類型"
+                  v-model="newCategory.isIncome"
+                  inline="true"
+                >
+                  <v-radio label="收入" :value="true"></v-radio>
+                  <v-radio label="支出" :value="false"></v-radio>
+                </v-radio-group>
+                <v-btn @click="isShowAddForm = false" color="grey" class="me-2"
+                  >取消</v-btn
+                >
+                <v-btn type="submit" color="primary" class="me-2">新增</v-btn>
+              </v-col>
+            </div>
+          </v-expand-transition>
+
+          <v-col cols="12" lg="6"
             ><v-card style="max-height: 50vh; overflow: auto">
               <v-card-title class="text-h6">支出類別</v-card-title>
               <v-card-text>
@@ -21,7 +46,7 @@
                         <v-list-item-title class="fs-5">
                           {{ item.name }}
                         </v-list-item-title>
-                        <vMenu offset-y>
+                        <v-menu offset-y>
                           <template #activator="{ props }"
                             ><v-btn v-bind="props"
                               ><v-icon class="fs-4">mdi-delete</v-icon></v-btn
@@ -41,7 +66,7 @@
                               }}</v-list-item-title>
                             </v-list-item>
                           </v-list>
-                        </vMenu>
+                        </v-menu>
                       </div> </v-list-item
                     ><v-divider />
                   </template>
@@ -64,7 +89,7 @@
                         <v-list-item-title class="fs-5">
                           {{ item.name }}
                         </v-list-item-title>
-                        <vMenu offset-y>
+                        <v-menu offset-y>
                           <template #activator="{ props }"
                             ><v-btn v-bind="props"
                               ><v-icon class="fs-4">mdi-delete</v-icon></v-btn
@@ -84,7 +109,7 @@
                               }}</v-list-item-title>
                             </v-list-item>
                           </v-list>
-                        </vMenu>
+                        </v-menu>
                       </div> </v-list-item
                     ><v-divider />
                   </template>
@@ -111,7 +136,7 @@
                         <v-list-item-title class="fs-5">
                           {{ item.name }}
                         </v-list-item-title>
-                        <vMenu offset-y>
+                        <v-menu offset-y>
                           <template #activator="{ props }"
                             ><v-btn v-bind="props"
                               ><v-icon class="fs-4">mdi-delete</v-icon></v-btn
@@ -131,7 +156,7 @@
                               }}</v-list-item-title>
                             </v-list-item>
                           </v-list>
-                        </vMenu>
+                        </v-menu>
                       </div> </v-list-item
                     ><v-divider />
                   </template>
@@ -151,7 +176,7 @@
                         <v-list-item-title class="fs-5">
                           {{ item.name }}
                         </v-list-item-title>
-                        <vMenu offset-y>
+                        <v-menu offset-y>
                           <template #activator="{ props }"
                             ><v-btn v-bind="props"
                               ><v-icon class="fs-4">mdi-delete</v-icon></v-btn
@@ -171,7 +196,7 @@
                               }}</v-list-item-title>
                             </v-list-item>
                           </v-list>
-                        </vMenu>
+                        </v-menu>
                       </div> </v-list-item
                     ><v-divider />
                   </template>
@@ -182,14 +207,23 @@
       </v-card-text>
       <v-card-actions
         ><v-btn @click="isShowDialogCategoryManagement = false">關閉</v-btn
-        ><v-btn class="text-primary">新增</v-btn></v-card-actions
+        ><v-btn class="text-primary" @click.prevent="isShowAddForm = true"
+          >新增</v-btn
+        ></v-card-actions
       >
     </v-card>
   </v-dialog>
 </template>
 <script setup>
 import axios from "axios";
-import { defineModel, defineProps, computed, defineEmits } from "vue";
+import {
+  defineModel,
+  defineProps,
+  computed,
+  defineEmits,
+  ref,
+  watch,
+} from "vue";
 import { useDisplay } from "vuetify";
 
 const props = defineProps(["allCategoriesData"]);
@@ -210,6 +244,8 @@ const incomeCategoryItems = computed(() => {
   );
 });
 
+// info 用於控制對話框顯示的事件
+// desc 從父組件傳入的props，控制dialog的顯示
 const isShowDialogCategoryManagement = defineModel(
   "isShowDialogCategoryManagement",
   {
@@ -217,6 +253,20 @@ const isShowDialogCategoryManagement = defineModel(
     type: Boolean,
   }
 );
+
+// info 用於新增分類的form
+const isShowAddForm = ref(false);
+const newCategory = ref({
+  name: "",
+  isIncome: true,
+});
+watch(isShowDialogCategoryManagement, (newVal) => {
+  if (!newVal) {
+    isShowAddForm.value = false;
+    newCategory.value = { name: "", isIncome: true }; // 重置新增分類的表單
+  }
+});
+
 
 const deleteCategoryAndParentsComponentRefresh = async (categoryId) => {
   // 刪除類別的部分
