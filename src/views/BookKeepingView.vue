@@ -2,12 +2,20 @@
   <!-- {{ recordsByDate }} -->
   <v-expansion-panels>
     <v-expansion-panel>
-      <v-expansion-panel-title>篩選記帳</v-expansion-panel-title>
+      <v-expansion-panel-title
+        >篩選記帳</v-expansion-panel-title
+      >
       <v-expansion-panel-text>
         <v-row
-          ><v-radio-group inline v-model="selectExpenseOrIncome">
+          ><v-radio-group
+            inline
+            v-model="selectExpenseOrIncome"
+          >
             <v-radio label="支出" value="expense"></v-radio>
-            <v-radio label="收入" value="income"></v-radio> </v-radio-group
+            <v-radio
+              label="收入"
+              value="income"
+            ></v-radio> </v-radio-group
         ></v-row>
         <v-row
           ><v-col cols="12" sm="6"
@@ -28,7 +36,10 @@
                   v-if="index === 2"
                   class="text-grey text-caption align-self-center fs-6 mt-3"
                 >
-                  (+{{ selectValue.length - 2 }} others)</span
+                  (+{{
+                    selectValue.length - 2
+                  }}
+                  others)</span
                 >
               </template>
             </v-select></v-col
@@ -62,24 +73,37 @@
     v-for="(records, index) in recordsByDate"
     :key="index"
   >
-    <v-card-title class="d-flex justify-center"></v-card-title>
+    <v-card-title
+      class="d-flex justify-center"
+    ></v-card-title>
     <v-list lines="one">
-      <v-list-subheader>{{ records[0].slice(5) }}</v-list-subheader>
+      <v-list-subheader>{{
+        records[0].slice(5)
+      }}</v-list-subheader>
 
-      <template v-for="(record, index) in records[1]" :key="index">
+      <template
+        v-for="(record, index) in records[1]"
+        :key="index"
+      >
         <v-list-item :ripple="true" @click.prevent="">
           <template v-slot:prepend>
             <v-avatar color="grey-darken-1"
               ><v-icon>{{
-                icons[record.category] || "mdi-help-circle"
+                icons[record.category] || 'mdi-help-circle'
               }}</v-icon></v-avatar
             >
           </template>
 
-          <v-list-item-title class="d-flex justify-space-between"
-            ><div class="category">{{ record.category }}</div>
-            <div class="note" style="max-width: 50%; overflow: auto">
-              {{ record.note || "沒有備註" }}
+          <v-list-item-title
+            class="d-flex justify-space-between"
+            ><div class="category">
+              {{ record.category }}
+            </div>
+            <div
+              class="note"
+              style="max-width: 50%; overflow: auto"
+            >
+              {{ record.note || '沒有備註' }}
             </div>
             <div
               class="amountAndDeleteIcon d-flex align-center"
@@ -106,9 +130,18 @@
     </v-list>
   </v-card>
   <div class="fixed-speed-dial">
-    <v-speed-dial location="top center" transition="scale-transition">
-      <template v-slot:activator="{ props: activatorProps }">
-        <v-fab v-bind="activatorProps" :size="fabSize" icon="mdi-menu"></v-fab>
+    <v-speed-dial
+      location="top center"
+      transition="scale-transition"
+    >
+      <template
+        v-slot:activator="{ props: activatorProps }"
+      >
+        <v-fab
+          v-bind="activatorProps"
+          :size="fabSize"
+          icon="mdi-menu"
+        ></v-fab>
       </template>
 
       <v-tooltip location="left">
@@ -144,7 +177,10 @@
             v-bind="props"
             :size="btnSize"
             icon="mdi-delete"
-            @click="showEachRecordDeleteIcon = !showEachRecordDeleteIcon"
+            @click="
+              showEachRecordDeleteIcon =
+                !showEachRecordDeleteIcon
+            "
           />
         </template>
         <span>刪除記帳</span>
@@ -167,13 +203,19 @@
     v-model="isShowDialogForm"
     :selectItems="selectItems"
     :all-categories-data="allCategoriesData"
-    @fetch-records-by-book="fetchRecordsByBook(TransactionStore.selectedBook)"
+    @fetch-records-by-book="
+      fetchRecordsByBook(TransactionStore.selectedBook)
+    "
   />
 
   <VuetifyCategoryManagement
-    v-model:isShowDialogCategoryManagement="isShowCategoryManagementComponent"
+    v-model:isShowDialogCategoryManagement="
+      isShowCategoryManagementComponent
+    "
     :all-categories-data="allCategoriesData"
-    @parent-component-refresh-category-data="fetchCategoryByUser"
+    @parent-component-refresh-category-data="
+      fetchCategoryByUser
+    "
   />
 
   <VuetifySetBudgetDialog
@@ -183,15 +225,15 @@
   />
 </template>
 <script setup>
-import { useTransactionStore } from "@/stores/useTransactionStore";
-import axios from "axios";
-import { computed, onMounted, ref, watch } from "vue";
-import { useDisplay } from "vuetify/lib/composables/display";
-import debounce from "lodash/debounce";
-import VuetifyForm from "@/components/VuetifyAddNewAccountDialog.vue";
-import { useRouter } from "vue-router";
-import VuetifyCategoryManagement from "@/components/VuetifyCategoryManagementDialog.vue";
-import VuetifySetBudgetDialog from "@/components/VuetifySetBudgetDialog.vue";
+import { useTransactionStore } from '@/stores/useTransactionStore';
+import axios from 'axios';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useDisplay } from 'vuetify/lib/composables/display';
+import debounce from 'lodash/debounce';
+import VuetifyForm from '@/components/VuetifyAddNewAccountDialog.vue';
+import { useRouter } from 'vue-router';
+import VuetifyCategoryManagement from '@/components/VuetifyCategoryManagementDialog.vue';
+import VuetifySetBudgetDialog from '@/components/VuetifySetBudgetDialog.vue';
 
 const router = useRouter();
 
@@ -217,11 +259,17 @@ const fetchRecordsByBook = async (bookId) => {
   records.value = response.data.records;
   filteredRecords.value = [...records.value];
 
-  console.log("response.data: ", response.data);
-  console.log("records.value: ", records.value);
+  console.log('response.data: ', response.data);
+  console.log('records.value: ', records.value);
 };
 
-let selectItems = ["fsfdd", "sdfsdf", "efd", "dfbb", "fsfe"]; // 只存放類別名稱的陣列
+let selectItems = [
+  'fsfdd',
+  'sdfsdf',
+  'efd',
+  'dfbb',
+  'fsfe',
+]; // 只存放類別名稱的陣列
 const allCategoriesData = ref([]); // 用來存放所有類別的資料
 
 const fetchCategoryByUser = async () => {
@@ -233,9 +281,14 @@ const fetchCategoryByUser = async () => {
     }
   );
 
-  selectItems = response.data.categories.map((category) => category.name);
+  selectItems = response.data.categories.map(
+    (category) => category.name
+  );
   allCategoriesData.value = response.data.categories;
-  console.log("allCategoriesData.value: ", allCategoriesData.value);
+  console.log(
+    'allCategoriesData.value: ',
+    allCategoriesData.value
+  );
 };
 
 // recordsByDate格式為: [[日期1, [該日期記帳資料1, 記帳資料2, ...]], [日期2, [該日期記帳資料1, 記帳資料2, ...]], ...]
@@ -253,14 +306,15 @@ const recordsByDate = computed(() => {
   const result = Object.entries(grouped)
     .map(([date, records]) => {
       // 每一天內的資料依照時間降冪排序（從新到舊）
-      records.sort((a, b) => new Date(b.date) - new Date(a.date));
+      records.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
       return [date, records];
     })
     .sort((a, b) => new Date(b[0]) - new Date(a[0])); // 日期排序（從新到舊)
 
   return result;
 });
-
 
 const TransactionStore = useTransactionStore();
 if (TransactionStore.selectedBook) {
@@ -269,54 +323,63 @@ if (TransactionStore.selectedBook) {
     fetchCategoryByUser();
   });
 } else {
-  alert("請先選擇記帳本");
-  router.push("/accountBook");
+  alert('請先選擇記帳本');
+  router.push('/accountBook');
 }
 
 // 調整v-speed-dial大小
 const display = useDisplay();
 
-const fabSize = computed(() => (display.smAndDown.value ? "large" : "x-large"));
-const btnSize = computed(() => (display.smAndDown.value ? "small" : "large"));
+const fabSize = computed(() =>
+  display.smAndDown.value ? 'large' : 'x-large'
+);
+const btnSize = computed(() =>
+  display.smAndDown.value ? 'small' : 'large'
+);
 
 // v-select組件 (下拉選擇篩選類別) 程式碼---------------------
 const selectValue = ref([]); // selectValue的watch跟金錢範圍的watch是同一個
 
-const selectExpenseOrIncome = ref("expense");
+const selectExpenseOrIncome = ref('expense');
 
 // v-text-filed組件 (選擇金額範圍的) 程式碼 -----------------
 const maxAmount = ref();
 const minAmount = ref();
 let maxAmountError = ref(false);
 let minAmountError = ref(false);
-let maxAmountErrorMessage = ref("");
-let minAmountErrorMessage = ref("");
-const errorMessage = ["最低金額不能超過最高金額"];
+let maxAmountErrorMessage = ref('');
+let minAmountErrorMessage = ref('');
+const errorMessage = ['最低金額不能超過最高金額'];
 
 // 建立防抖函式，避免用戶輸入時過早觸發驗證
 // 用於篩選記帳的函數
 const handleAmountChangeAndCategoryChange = debounce(
   (newMax, newMin, oldMax, oldMin) => {
-    console.log("newMax: ", newMax, 'newMax===""', newMax === "");
+    console.log(
+      'newMax: ',
+      newMax,
+      'newMax===""',
+      newMax === ''
+    );
     console.log(newMin);
     // 將輸入轉成數字，避免字串比較問題
-    const min = newMin === "" ? NaN : Number(newMin);
-    const max = newMax === "" ? NaN : Number(newMax);
+    const min = newMin === '' ? NaN : Number(newMin);
+    const max = newMax === '' ? NaN : Number(newMax);
 
     // reset
     minAmountError.value = false;
     maxAmountError.value = false;
-    minAmountErrorMessage.value = "";
-    maxAmountErrorMessage.value = "";
+    minAmountErrorMessage.value = '';
+    maxAmountErrorMessage.value = '';
 
     let filterFn;
     // 如果 min 和 max 都有值，才做比較與錯誤提示
-    console.log("判斷錯誤前的max: ", max);
-    console.log("判斷錯誤前的min: ", min);
     if (!isNaN(min) && !isNaN(max)) {
-      console.log("進入錯誤判斷");
-      console.log("min: ", min, "!isNaN(min): ", !isNaN(min));
-      console.log("max: ", max, "!isNaN(max): ", !isNaN(max));
+      const isIncome =
+        selectExpenseOrIncome.value === 'isIncome'
+          ? true
+          : false;
+
       if (min > max) {
         if (max === Number(oldMax)) {
           minAmountError.value = true;
@@ -332,25 +395,37 @@ const handleAmountChangeAndCategoryChange = debounce(
         record.amount <= max &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
-        selectExpenseOrIncome.value === record.isIncome;
+        isIncome === record.isIncome;
     } else if (!isNaN(min)) {
+      const isIncome =
+        selectExpenseOrIncome.value === 'isIncome'
+          ? true
+          : false;
       filterFn = (record) =>
         record.amount >= min &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
-        selectExpenseOrIncome.value === record.isIncome;
+        isIncome === record.isIncome;
     } else if (!isNaN(max)) {
+      const isIncome =
+        selectExpenseOrIncome.value === 'isIncome'
+          ? true
+          : false;
       filterFn = (record) =>
         record.amount <= max &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
-        selectExpenseOrIncome.value === record.isIncome;
+        isIncome === record.isIncome;
     } else {
+      const isIncome =
+        selectExpenseOrIncome.value === 'isIncome'
+          ? true
+          : false;
       filterFn = (record) =>
         true &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
-        selectExpenseOrIncome.value === record.isIncome; // 無篩選條件
+        isIncome === record.isIncome; // 無篩選條件
     }
 
     // 篩選資料
@@ -361,34 +436,47 @@ const handleAmountChangeAndCategoryChange = debounce(
 
 // 監聽變更金錢範圍變更，但觸發的是防抖函式
 watch(
-  [minAmount, maxAmount, selectValue, selectExpenseOrIncome],
+  [
+    minAmount,
+    maxAmount,
+    selectValue,
+    selectExpenseOrIncome,
+  ],
   ([newMin, newMax], [oldMin, oldMax]) => {
-    handleAmountChangeAndCategoryChange(newMax, newMin, oldMax, oldMin);
+    handleAmountChangeAndCategoryChange(
+      newMax,
+      newMin,
+      oldMax,
+      oldMin
+    );
   }
 );
 
 // categories對應的icons
 const icons = {
-  餐飲: "mdi-silverware-fork-knife",
-  交通: "mdi-bus",
-  娛樂: "mdi-controller-classic",
-  其他: "mdi-dots-horizontal",
-  薪水: "mdi-briefcase",
-  投資: "mdi-finance",
+  餐飲: 'mdi-silverware-fork-knife',
+  交通: 'mdi-bus',
+  娛樂: 'mdi-controller-classic',
+  其他: 'mdi-dots-horizontal',
+  薪水: 'mdi-briefcase',
+  投資: 'mdi-finance',
 };
 
 const showEachRecordDeleteIcon = ref(false);
 
 async function deleteRecord(record) {
-  console.log("record", record);
-  if (confirm("確定要刪除這筆記帳嗎？")) {
+  console.log('record', record);
+  if (confirm('確定要刪除這筆記帳嗎？')) {
     // 找到v-select選取的category所對應的Object
     const findTheCategoryObjecte = computed(() => {
       return allCategoriesData.value.find(
         (item) => item.name === record.category
       );
     });
-    console.log("findTheCategoryObjecte: ", findTheCategoryObjecte.value);
+    console.log(
+      'findTheCategoryObjecte: ',
+      findTheCategoryObjecte.value
+    );
 
     await axios
       .delete(
@@ -405,12 +493,12 @@ async function deleteRecord(record) {
         }
       )
       .then((response) => {
-        console.log("刪除成功:", response.data);
+        console.log('刪除成功:', response.data);
         // 刪除後重新獲取記帳資料
         fetchRecordsByBook(TransactionStore.selectedBook);
       })
       .catch((error) => {
-        console.error("刪除失敗:", error);
+        console.error('刪除失敗:', error);
       });
   }
 }

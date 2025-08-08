@@ -21,21 +21,30 @@
             required
           />
           <v-textarea v-model="form.note" label="備註" />
-          <v-text-field v-model="form.date" label="日期" type="date" required />
+          <v-text-field
+            v-model="form.date"
+            label="日期"
+            type="date"
+            required
+          />
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="isShowDialogForm = false">取消</v-btn>
-        <v-btn color="primary" @click="submitForm">新增</v-btn>
+        <v-btn text @click="isShowDialogForm = false"
+          >取消</v-btn
+        >
+        <v-btn color="primary" @click="submitForm"
+          >新增</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import { useTransactionStore } from "@/stores/useTransactionStore";
-import axios from "axios";
+import { useTransactionStore } from '@/stores/useTransactionStore';
+import axios from 'axios';
 import {
   defineModel,
   defineProps,
@@ -43,14 +52,14 @@ import {
   watch,
   ref,
   computed,
-} from "vue";
+} from 'vue';
 
 const props = defineProps({
   selectItems: Array,
   allCategoriesData: Array,
 });
 
-const emit = defineEmits(["fetchRecordsByBook"]);
+const emit = defineEmits(['fetchRecordsByBook']);
 
 const isShowDialogForm = defineModel();
 
@@ -58,8 +67,8 @@ const TransactionStore = useTransactionStore();
 const form = ref({
   isIncome: false,
   amount: null,
-  category: "",
-  note: "",
+  category: '',
+  note: '',
   date: new Date().toISOString().slice(0, 10),
 });
 
@@ -78,19 +87,17 @@ const findTheCategoryObjecte = computed(() => {
   );
 });
 
-
-
 const submitForm = async () => {
   if (
     form.value.amount === null ||
     form.value.amount === 0 ||
-    form.value.category === ""
+    form.value.category === ''
   ) {
-    alert("金錢和類別是必填項目");
+    alert('金錢和類別是必填項目');
     return;
   }
   // 送出資料邏輯，例如呼叫 API 儲存
-  console.log("送出表單: ", form.value);
+  console.log('送出表單: ', form.value);
 
   // 關閉 dialog
   isShowDialogForm.value = false;
@@ -110,20 +117,26 @@ const submitForm = async () => {
         withCredentials: true,
       }
     );
-    console.log("savedRecordId: ", response.data.savedRecordId);
-    console.log("response.data.updatedBook: ", response.data.updatedBook);
+    console.log(
+      'savedRecordId: ',
+      response.data.savedRecordId
+    );
+    console.log(
+      'response.data.updatedBook: ',
+      response.data.updatedBook
+    );
     // console.log("findTheCategoryObject: ", findTheCategoryObjecte);
-    emit("fetchRecordsByBook");
+    emit('fetchRecordsByBook');
   } catch (error) {
-    console.log("Error submitting form:", error);
+    console.log('Error submitting form:', error);
   }
 
   // 清空表單
   form.value = {
     isIncome: false,
     amount: null,
-    category: "",
-    note: "",
+    category: '',
+    note: '',
     date: new Date().toISOString().slice(0, 10),
   };
 
