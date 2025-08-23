@@ -41,7 +41,7 @@
                 v-for="(category, index) in highSpendingCategories"
                 :key="index"
               >
-                <h5>{{ index + 1 + "." + category[0] }}</h5>
+                <h5>{{ index + 1 + '.' + category[0] }}</h5>
               </button>
             </div>
           </div>
@@ -131,9 +131,9 @@
 </template>
 
 <script setup>
-import PieChart from "@/components/PieChart.vue";
-import { ref, onMounted, watch, computed } from "vue";
-import axios from "axios";
+import PieChart from '@/components/PieChart.vue';
+import { ref, onMounted, watch, computed } from 'vue';
+import axios from 'axios';
 
 let pieLabels = ref([]);
 let pieMoney = ref([]);
@@ -142,13 +142,13 @@ const pieData = computed(() => ({
   labels: pieLabels.value,
   datasets: [
     {
-      label: "支出",
+      label: '支出',
       data: pieMoney.value,
       backgroundColor: [
-        "rgb(255, 99, 132)",
-        "rgb(54, 162, 235)",
-        "rgb(255, 205, 86)",
-        "rgb(75, 192, 192)",
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
       ],
     },
   ],
@@ -159,8 +159,8 @@ const pieOptions = ref({
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "right",
-      align: "cneter",
+      position: 'right',
+      align: 'cneter',
       labels: {
         boxWidth: 20,
         boxHeight: 10,
@@ -177,10 +177,10 @@ const lineData = computed(() => ({
   labels: lineLabels.value, // X 軸標籤，後端提供
   datasets: [
     {
-      label: "支出", // 數據集標籤
+      label: '支出', // 數據集標籤
       data: lineMoney.value, // 數據點，後端提供
-      backgroundColor: "rgba(75, 192, 192, 0.2)", // 填充顏色
-      borderColor: "rgba(75, 192, 192, 1)", // 線條顏色
+      backgroundColor: 'rgba(75, 192, 192, 0.2)', // 填充顏色
+      borderColor: 'rgba(75, 192, 192, 1)', // 線條顏色
       borderWidth: 2, // 線條寬度
       tension: 0.2, // 曲線張力 (0 為直線)
     },
@@ -197,23 +197,26 @@ const lineOptions = ref({
   },
 });
 
-const selectedDate = ref("default");
-const spendingTrendRadio = ref("month");
+const selectedDate = ref('default');
+const spendingTrendRadio = ref('month');
 const optionsMonths = ref([]);
 
-const currentMonthIncome = ref("");
+const currentMonthIncome = ref('');
 const currentMonthExpenditure = ref();
 const highSpendingCategories = ref([]);
 
 // 先從後端取得預設月份的資料
 onMounted(async () => {
   try {
-    const response = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/statistics/init`, {
-      withCredentials: true,
-    });
+    const response = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/statistics/init`,
+      {
+        withCredentials: true,
+      }
+    );
     optionsMonths.value = response.data.months;
     selectedDate.value = optionsMonths.value[optionsMonths.value.length - 1]; // 預設選擇最新的月份
-    console.log("後端資料:", response.data);
+    console.log('後端資料:', response.data);
 
     // 給要用到的資料賦值
     const backendData = response.data.allData.data;
@@ -230,11 +233,14 @@ onMounted(async () => {
 });
 
 watch(selectedDate, async (newValue) => {
-  const response = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/statistics`, {
-    params: { selectedDate: newValue },
-    withCredentials: true,
-  });
-  console.log("後端資料:", response.data);
+  const response = await axios.get(
+    `${process.env.VUE_APP_BACKEND_API_URL}/statistics`,
+    {
+      params: { selectedDate: newValue },
+      withCredentials: true,
+    }
+  );
+  console.log('後端資料:', response.data);
 
   const backendData = response.data.data;
   currentMonthIncome.value = backendData.totalIncome;
@@ -262,8 +268,10 @@ async function getAndSetLineChartData(spendingTrendRadio, selectedDate) {
       withCredentials: true,
     }
   );
+  console.log('折線圖後端資料:', lineResponse.data);
+
   const lineBackendData = lineResponse.data;
-  if (spendingTrendRadio === "month") {
+  if (spendingTrendRadio === 'month') {
     lineLabels.value = lineBackendData.map((item) => item.week.slice(-1));
   } else {
     lineLabels.value = lineBackendData.map((item) => item.month.slice(-2));

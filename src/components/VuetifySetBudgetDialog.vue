@@ -7,8 +7,7 @@
     transition="dialog-transition"
   >
     <v-card>
-      <v-card-media src="src" height="200px">
-      </v-card-media>
+      <v-card-media src="src" height="200px"> </v-card-media>
       <v-card-title primary-title>
         <div>
           <h3 class="headline mb-0">預算設定</h3>
@@ -17,18 +16,18 @@
       <v-card-text>
         <!-- 每個類別的Card可以設定預算 -->
         <v-card
-          v-for="(
-            category, index
-          ) in categoriesWithRatioAndColorProperty"
+          v-for="(category, index) in categoriesWithRatioAndColorProperty"
           :key="index"
           class="mb-4"
         >
-          <v-card-title
-            class="d-flex justify-space-between align-center"
-          >
+          <v-card-title class="d-flex justify-space-between align-center">
             <span class="fs-3">{{ category.name }}</span>
             <v-chip :color="category.color" class="fs-5"
-              >{{ category.total }}/{{ category.budget }}
+              >{{
+                Number.isInteger(category.total)
+                  ? category.total
+                  : category.total.toFixed(2)
+              }}/{{ category.budget }}
             </v-chip>
           </v-card-title>
 
@@ -36,15 +35,11 @@
             <v-progress-linear
               height="20px"
               rounded="true"
-              :model-value="
-                category.budget == 0 ? 0 : category.ratio
-              "
+              :model-value="category.budget == 0 ? 0 : category.ratio"
               striped
               :color="category.color"
             >
-              <span
-                v-if="category.budget == 0"
-                style="color: black"
+              <span v-if="category.budget == 0" style="color: black"
                 >未設定預算</span
               >
             </v-progress-linear>
@@ -55,10 +50,7 @@
               text
               class="fs-5"
               @click.prevent="
-                openSettingBudgetDialog(
-                  category.budget,
-                  category._id
-                )
+                openSettingBudgetDialog(category.budget, category._id)
               "
               >編輯預算</v-btn
             >
@@ -66,41 +58,23 @@
         </v-card>
       </v-card-text>
       <v-card-actions>
-        <v-btn
-          flat
-          color="primary"
-          class="fs-6"
-          @click.prevent="emit('close')"
+        <v-btn flat color="primary" class="fs-6" @click.prevent="emit('close')"
           >關閉</v-btn
         >
       </v-card-actions>
     </v-card>
   </v-dialog>
 
-  <v-dialog
-    v-model="isEditingBudgetDialog"
-    max-width="500px"
-  >
+  <v-dialog v-model="isEditingBudgetDialog" max-width="500px">
     <v-card>
       <v-card-title class="headline">設定預算</v-card-title>
       <v-card-text>
-        <v-text-field
-          v-model="setNewBudget"
-          label="設定預算"
-          type="number"
-        />
+        <v-text-field v-model="setNewBudget" label="設定預算" type="number" />
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn text @click="isEditingBudgetDialog = false"
-          >取消</v-btn
-        >
-        <v-btn
-          text
-          color="primary"
-          @click="saveBudgetInDB()"
-          >確認</v-btn
-        >
+        <v-btn text @click="isEditingBudgetDialog = false">取消</v-btn>
+        <v-btn text color="primary" @click="saveBudgetInDB()">確認</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -149,18 +123,13 @@ const categoriesWithRatioAndColorProperty = computed(() => {
       const id = category._id;
 
       const ratioMap =
-        backendRatioAndBudgetAndTotal.value
-          ?.ratiosByCategory || {};
-      const budgetMap =
-        backendRatioAndBudgetAndTotal.value?.budget || {};
+        backendRatioAndBudgetAndTotal.value?.ratiosByCategory || {};
+      const budgetMap = backendRatioAndBudgetAndTotal.value?.budget || {};
       const totalMap =
-        backendRatioAndBudgetAndTotal.value
-          ?.totalsByCategory || {};
+        backendRatioAndBudgetAndTotal.value?.totalsByCategory || {};
 
-      const budget =
-        budgetMap[id] === undefined ? 0 : budgetMap[id];
-      const total =
-        totalMap[id] === undefined ? 0 : totalMap[id];
+      const budget = budgetMap[id] === undefined ? 0 : budgetMap[id];
+      const total = totalMap[id] === undefined ? 0 : totalMap[id];
       const ratio = (() => {
         if (ratioMap[id] !== undefined) {
           return ratioMap[id];
@@ -182,10 +151,7 @@ const categoriesWithRatioAndColorProperty = computed(() => {
 });
 
 watch(categoriesWithRatioAndColorProperty, (newValue) => {
-  console.log(
-    'categoriesWithRatioAndColorProperty變化了',
-    newValue
-  );
+  console.log('categoriesWithRatioAndColorProperty變化了', newValue);
 });
 
 // 當該Dialog開啟時使用
@@ -201,17 +167,13 @@ function getCategoryStatusColor(total, budget) {
   const ratio = total / budget;
   console.log('計算比例', ratio);
   if (isNaN(ratio)) return '';
-  if (ratio <= 0.5 || isNaN(ratio) || ratio === Infinity)
-    return 'green';
+  if (ratio <= 0.5 || isNaN(ratio) || ratio === Infinity) return 'green';
   else if (ratio <= 0.75) return 'orange';
   else return 'red';
 }
 
 const currentEditingCategoryId = ref(null);
-function openSettingBudgetDialog(
-  currentBudget,
-  categoryId
-) {
+function openSettingBudgetDialog(currentBudget, categoryId) {
   isEditingBudgetDialog.value = true;
   setNewBudget.value = currentBudget;
   currentEditingCategoryId.value = categoryId;
