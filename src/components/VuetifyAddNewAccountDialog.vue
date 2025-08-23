@@ -12,12 +12,12 @@
                 <v-radio label="收入" :value="true"></v-radio> </v-radio-group
             ></v-col>
             <v-col
-              ><v-combobox
+              ><v-select
                 class=""
                 label="選擇貨幣"
                 :items="supportedCurrencies"
                 v-model="form.currencyCode"
-              ></v-combobox
+              ></v-select
             ></v-col>
           </v-row>
 
@@ -139,7 +139,11 @@ const submitForm = async () => {
     console.log('Response from API:', response.data);
     emit('fetchRecordsByBook');
   } catch (error) {
-    if(error.response.data.message === 'No exchange rate found for the given date' && error.response.status === 404) {
+    if (
+      error.response.data.message ===
+        'No exchange rate found for the given date' &&
+      error.response.status === 404
+    ) {
       alert('該日期沒有匯率資料，請選擇其他日期');
     } else {
       alert('新增記帳失敗，請稍後再試');
