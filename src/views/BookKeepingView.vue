@@ -97,12 +97,25 @@
                 "
               >
                 <div class="amountAndCurrency">
-                  <v-chip v-if="record.currencyCode !== 'TWD'"
+                  <v-chip
+                    v-if="
+                      !(
+                        record.currencyCode === 'TWD' ||
+                        record.currencyCode === null ||
+                        record.currencyCode === undefined
+                      )
+                    "
                     >{{ Math.trunc(record.amount * record.rate) }}
                     {{ record.currencyCode }}</v-chip
                   >
                   <div
-                    v-if="record.currencyCode !== 'TWD'"
+                    v-if="
+                      !(
+                        record.currencyCode === 'TWD' ||
+                        record.currencyCode === null ||
+                        record.currencyCode === undefined
+                      )
+                    "
                     class=""
                     style="text-align: center; font-size: 1.2rem"
                   >
