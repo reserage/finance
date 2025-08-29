@@ -1,6 +1,7 @@
 <template>
   <v-app>
     <NewNavigation />
+
     <v-main>
       <v-container>
         <routerView />
@@ -10,9 +11,8 @@
 </template>
 
 <script setup>
-import NewNavigation from "./components/NewNavigation.vue";
+import NewNavigation from './components/NewNavigation.vue';
 </script>
 <style>
 /* 因為沒有 scope 所以要注意 */
-
 </style>

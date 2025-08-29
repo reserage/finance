@@ -1,15 +1,64 @@
 <template>
   <div>
+    <v-navigation-drawer
+      color="surface-variant"
+      :width="400"
+      v-model="navModel"
+      location="right"
+      temporary
+      style=""
+    >
+      <div style="height: 100%">
+        <v-sheet style="height: 10%"
+          ><v-btn-group
+            ><v-btn
+              ><v-icon size="32" @click.stop="navModel = false"
+                >mdi-chevron-left</v-icon
+              ></v-btn
+            ></v-btn-group
+          >
+          {{ currentDateText }}</v-sheet
+        >
+        <v-sheet style="height: 90%"
+          ><div ref="dayCalendar" style="height: 100%"></div
+        ></v-sheet>
+      </div>
+    </v-navigation-drawer>
+
     <!-- 控制列 -->
     <div style="display: flex; align-items: center; margin-bottom: 10px">
       <v-btn-group>
-        <v-btn @click="goPrev" prepend-icon="mdi-chevron-left">Prev</v-btn>
-        <v-btn @click="goToday">Today</v-btn>
-        <v-btn @click="goNext" append-icon="mdi-chevron-right">Next</v-btn>
+        <v-btn
+          @click="currentDateText = goPrev(cal)"
+          prepend-icon="mdi-chevron-left"
+          >Prev</v-btn
+        >
+        <v-btn @click="currentDateText = goToday(cal)">Today</v-btn>
+        <v-btn
+          @click="currentDateText = goNext(cal)"
+          append-icon="mdi-chevron-right"
+          >Next</v-btn
+        >
       </v-btn-group>
       <span style="margin-left: 16px; font-weight: bold; font-size: 18px">
         {{ currentDateText }}
       </span>
+      <v-spacer></v-spacer>
+
+      <v-select
+        v-model="calendarView"
+        label="模式"
+        :items="[
+          { title: '月', value: 'month' },
+          { title: '週', value: 'week' },
+          { title: '日', value: 'day' },
+        ]"
+        item-title="title"
+        item-value="value"
+        variant="underlined"
+        hide-details=""
+        style="margin-top: 0.1rem"
+      ></v-select>
     </div>
 
     <!-- 日曆 -->
@@ -111,19 +160,30 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import Calendar from '@toast-ui/calendar';
+import {
+  updateCurrentDate,
+  goPrev,
+  goNext,
+  goToday,
+} from '@/utils/baseCalendarFunction';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 
 const calendar = ref(null);
+const dayCalendar = ref(null);
 let cal = null;
+let dayCal = null;
+
 const currentDateText = ref('');
-const dialog = ref(true);
+const calendarView = ref('月');
+const dialog = ref(false);
+const navModel = ref(false);
 
 onMounted(() => {
   cal = new Calendar(calendar.value, {
     defaultView: 'month',
-    useFormPopup: true,
+    useFormPopup: false,
     useDetailPopup: true,
     week: {},
     calendars: [
@@ -181,39 +241,77 @@ onMounted(() => {
 
   cal.on('selectDateTime', (event) => {
     console.log('使用者點了日期格子:', event);
-    console.log('開始時間:', event.start);
-    console.log('結束時間:', event.end);
+    navModel.value = true;
   });
 
   // 初始化日期顯示
-  updateCurrentDate();
+  currentDateText.value = updateCurrentDate(cal);
 });
 
-function updateCurrentDate() {
-  if (cal) {
-    const date = cal.getDate();
-    // 格式化年月
-    currentDateText.value = `${date.getFullYear()} - ${String(
-      date.getMonth() + 1
-    ).padStart(2, '0')}`;
-    console.log('Current Date:', currentDateText.value);
-  }
-}
+onMounted(() => {
+  dayCal = new Calendar(dayCalendar.value, {
+    defaultView: 'day',
+    useFormPopup: true,
+    useDetailPopup: true,
+    week: {},
+    calendars: [
+      {
+        id: '1',
+        name: 'Personal',
+        backgroundColor: '#9e5fff',
+      },
+      {
+        id: '2',
+        name: 'Work',
+        backgroundColor: '#00a9ff',
+      },
+    ],
+  });
 
-function goPrev() {
-  cal.prev();
-  updateCurrentDate();
-}
+  // 加一些事件
+  dayCal.createEvents([
+    {
+      id: 'event1',
+      calendarId: '1',
+      title: 'Meeting',
+      start: '2025-08-26T09:00:00',
+      end: '2025-08-26T10:00:00',
+    },
+    {
+      id: 'event1',
+      calendarId: '1',
+      title: 'Meeting',
+      start: '2025-08-26T09:00:00',
+      end: '2025-08-26T10:00:00',
+    },
+    {
+      id: 'event1',
+      calendarId: '1',
+      title: 'Meeting',
+      start: '2025-08-26T09:00:00',
+      end: '2025-08-26T10:00:00',
+    },
+    {
+      id: 'event1',
+      calendarId: '1',
+      title: 'Meeting',
+      start: '2025-08-26T09:00:00',
+      end: '2025-08-26T10:00:00',
+    },
+    {
+      id: 'event2',
+      calendarId: '2',
+      title: 'Conference',
+      start: '2025-08-26T11:00:00',
+      end: '2025-08-27T12:00:00',
+    },
+  ]);
+});
 
-function goNext() {
-  cal.next();
-  updateCurrentDate();
-}
-
-function goToday() {
-  cal.today();
-  updateCurrentDate();
-}
+watch(calendarView, (newValue) => {
+  console.log('切換到模式:', newValue);
+  cal.changeView(newValue);
+});
 </script>
 <style>
 .toastui-calendar-daygrid-cell {
@@ -228,6 +326,11 @@ function goToday() {
 }
 
 .toastui-calendar-day-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.toastui-calendar-week-view {
   display: flex;
   flex-direction: column;
 }
