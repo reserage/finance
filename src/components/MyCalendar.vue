@@ -8,18 +8,46 @@
       temporary
       style=""
     >
-      <div style="height: 100%">
-        <v-sheet style="height: 10%"
+      <div style="height: 100%; display: flex; flex-direction: column">
+        <v-sheet style="flex: 0 0 auto"
           ><v-btn-group
             ><v-btn
-              ><v-icon size="32" @click.stop="navModel = false"
+              ><v-icon size="32" @click.stop="closeDayCalendar"
                 >mdi-chevron-left</v-icon
               ></v-btn
-            ></v-btn-group
-          >
-          {{ currentDateText }}</v-sheet
+            >
+            <v-btn
+              @click="dayCurrentDateText = goPrev(dayCal)"
+              prepend-icon="mdi-chevron-left"
+              >Prev</v-btn
+            >
+            <v-btn @click="dayCurrentDateText = goToday(dayCal)">Today</v-btn>
+            <v-btn
+              @click="dayCurrentDateText = goNext(dayCal)"
+              append-icon="mdi-chevron-right"
+              >Next</v-btn
+            >
+          </v-btn-group>
+          <span
+            style="
+              font-weight: bold;
+              display: flex;
+              justify-content: space-evenly;
+            "
+            ><span style="display: flex; align-items: center">{{
+              dayCurrentDateText
+            }}</span
+            ><span
+              ><v-btn
+                variant="text"
+                @click="dialog = true"
+                style="font-weight: bold"
+                >新增事件</v-btn
+              ></span
+            ></span
+          ></v-sheet
         >
-        <v-sheet style="height: 90%"
+        <v-sheet style="flex: 1 1 auto; overflow: hidden"
           ><div ref="dayCalendar" style="height: 100%"></div
         ></v-sheet>
       </div>
@@ -64,98 +92,86 @@
     <!-- 日曆 -->
     <div ref="calendar" style="height: 800px"></div>
 
-    <v-dialog v-model="dialog" max-width="600px"
-      ><v-card prepend-icon="mdi-account" title="User Profile">
+    <v-dialog v-model="dialog" max-width="600">
+      <v-card>
+        <v-card-title class="text-h6">新增事件</v-card-title>
         <v-card-text>
-          <v-row dense>
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field label="First name*" required></v-text-field>
-            </v-col>
+          <v-form v-model="valid" ref="form">
+            <!-- 標題 -->
+            <v-text-field
+              v-model="eventForm.title"
+              label="標題"
+              :rules="[(v) => !!v || '請輸入標題']"
+              required
+            ></v-text-field>
 
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field
-                hint="example of helper text only on focus"
-                label="Middle name"
-              ></v-text-field>
-            </v-col>
+            <!-- 所屬行事曆 -->
+            <v-select
+              v-model="eventForm.calendarId"
+              :items="calCategories"
+              item-title="name"
+              item-value="id"
+              label="行事曆分類"
+              required
+            ></v-select>
 
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field
-                hint="example of persistent helper text"
-                label="Last name*"
-                persistent-hint
-                required
-              ></v-text-field>
-            </v-col>
+            <!-- 整天事件切換 -->
+            <v-switch v-model="eventForm.isAllDay" label="整天事件"></v-switch>
 
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field label="Email*" required></v-text-field>
-            </v-col>
+            <!-- 開始時間 -->
+            <v-text-field
+              v-model="eventForm.start"
+              label="開始時間"
+              type="datetime-local"
+              v-if="!eventForm.isAllDay"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="eventForm.start"
+              label="開始日期"
+              type="date"
+              v-else
+              required
+            ></v-text-field>
 
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field
-                label="Password*"
-                type="password"
-                required
-              ></v-text-field>
-            </v-col>
+            <!-- 結束時間 -->
+            <v-text-field
+              v-model="eventForm.end"
+              label="結束時間"
+              type="datetime-local"
+              v-if="!eventForm.isAllDay"
+              required
+            ></v-text-field>
+            <v-text-field
+              v-model="eventForm.end"
+              label="結束日期"
+              type="date"
+              v-else
+              required
+            ></v-text-field>
 
-            <v-col cols="12" md="4" sm="6">
-              <v-text-field
-                label="Confirm Password*"
-                type="password"
-                required
-              ></v-text-field>
-            </v-col>
+            <!-- 地點 -->
+            <v-text-field
+              v-model="eventForm.location"
+              label="地點"
+            ></v-text-field>
 
-            <v-col cols="12" sm="6">
-              <v-select
-                :items="['0-17', '18-29', '30-54', '54+']"
-                label="Age*"
-                required
-              ></v-select>
-            </v-col>
-
-            <v-col cols="12" sm="6">
-              <v-autocomplete
-                :items="[
-                  'Skiing',
-                  'Ice hockey',
-                  'Soccer',
-                  'Basketball',
-                  'Hockey',
-                  'Reading',
-                  'Writing',
-                  'Coding',
-                  'Basejump',
-                ]"
-                label="Interests"
-                auto-select-first
-                multiple
-              ></v-autocomplete>
-            </v-col>
-          </v-row>
-
-          <small class="text-caption text-medium-emphasis"
-            >*indicates required field</small
-          >
+            <!-- 描述 -->
+            <v-textarea
+              v-model="eventForm.body"
+              label="描述"
+              rows="3"
+            ></v-textarea>
+          </v-form>
         </v-card-text>
-
-        <v-divider></v-divider>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-
-          <v-btn text="Close" variant="plain" @click="dialog = false"></v-btn>
-
-          <v-btn
-            color="primary"
-            text="Save"
-            variant="tonal"
-            @click="dialog = false"
-          ></v-btn>
-        </v-card-actions> </v-card
-    ></v-dialog>
+          <v-btn text @click="dialog = false">取消</v-btn>
+          <v-btn color="primary" @click="submitEvent">新增</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -167,7 +183,8 @@ import {
   goPrev,
   goNext,
   goToday,
-} from '@/utils/baseCalendarFunction';
+} from '@/utils/toastCalendarBaseAPI';
+import useCalendar from '@/composables/MyCalendar/useCalendarConfig';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 
 const calendar = ref(null);
@@ -175,143 +192,107 @@ const dayCalendar = ref(null);
 let cal = null;
 let dayCal = null;
 
+const {
+  eventForm,
+  calEvents,
+  calCategories,
+  submitEvent,
+  setCalendarsInstances,
+} = useCalendar();
+
 const currentDateText = ref('');
+const dayCurrentDateText = ref('');
 const calendarView = ref('月');
 const dialog = ref(false);
 const navModel = ref(false);
 
+//info main calendar
 onMounted(() => {
   cal = new Calendar(calendar.value, {
     defaultView: 'month',
     useFormPopup: false,
     useDetailPopup: true,
     week: {},
-    calendars: [
-      {
-        id: '1',
-        name: 'Personal',
-        backgroundColor: '#9e5fff',
-      },
-      {
-        id: '2',
-        name: 'Work',
-        backgroundColor: '#00a9ff',
-      },
-    ],
+    calendars: calCategories,
   });
 
   // 加一些事件
-  cal.createEvents([
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event2',
-      calendarId: '2',
-      title: 'Conference',
-      start: '2025-08-26T11:00:00',
-      end: '2025-08-27T12:00:00',
-    },
-  ]);
+  cal.createEvents(calEvents);
 
   cal.on('selectDateTime', (event) => {
     console.log('使用者點了日期格子:', event);
     navModel.value = true;
+    dayCal.setDate(event.start);
+
+    dayCurrentDateText.value = updateCurrentDate(dayCal);
+  });
+
+  cal.on('clickEvent', (event) => {
+    console.log('使用者點了事件:', event);
+  });
+
+  //todo fetch相關的改成axios
+  cal.on('beforeUpdateEvent', (updateData) => {
+    console.log(updateData);
+
+    const { event, changes } = updateData;
+
+    console.log('原本事件:', event);
+    console.log('更動內容:', changes);
+
+    // 例如把更新傳回後端
+    fetch(`/api/events/${event.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(changes),
+    }).then(() => {
+      // 前端同步更新事件
+      cal.updateEvent(event.id, event.calendarId, changes);
+    });
   });
 
   // 初始化日期顯示
   currentDateText.value = updateCurrentDate(cal);
 });
 
+//info day calendar
 onMounted(() => {
   dayCal = new Calendar(dayCalendar.value, {
     defaultView: 'day',
-    useFormPopup: true,
+    useFormPopup: false,
     useDetailPopup: true,
     week: {},
-    calendars: [
-      {
-        id: '1',
-        name: 'Personal',
-        backgroundColor: '#9e5fff',
-      },
-      {
-        id: '2',
-        name: 'Work',
-        backgroundColor: '#00a9ff',
-      },
-    ],
+    calendars: calCategories,
   });
 
   // 加一些事件
-  dayCal.createEvents([
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event1',
-      calendarId: '1',
-      title: 'Meeting',
-      start: '2025-08-26T09:00:00',
-      end: '2025-08-26T10:00:00',
-    },
-    {
-      id: 'event2',
-      calendarId: '2',
-      title: 'Conference',
-      start: '2025-08-26T11:00:00',
-      end: '2025-08-27T12:00:00',
-    },
-  ]);
+  dayCal.createEvents(calEvents);
+
+  dayCal.on('selectDateTime', (event) => {
+    console.log('使用者點了日期格子:', event);
+  });
+
+  dayCal.on('clickEvent', (event) => {
+    console.log('使用者點了事件:', event);
+  });
+
+  dayCurrentDateText.value = updateCurrentDate(dayCal);
+  setCalendarsInstances(cal, dayCal);
 });
 
 watch(calendarView, (newValue) => {
-  console.log('切換到模式:', newValue);
   cal.changeView(newValue);
 });
+
+watch(navModel, (newValue) => {
+  if (!newValue) {
+    cal.clearGridSelections();
+  }
+});
+
+function closeDayCalendar() {
+  navModel.value = false;
+}
 </script>
 <style>
 .toastui-calendar-daygrid-cell {

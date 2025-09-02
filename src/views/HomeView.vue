@@ -45,16 +45,24 @@
     <!-- <div class="exchangeContainer">
         <ComputerExchangeRate />
       </div> -->
+
+    <div>
+      <v-btn @click="getLocation">取得經緯度</v-btn>
+      <p v-if="latitude !== null && longitude !== null">
+        經度: {{ longitude }}, 緯度: {{ latitude }}
+      </p>
+      <p v-else-if="error">{{ error }}</p>
+    </div>
   </main>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
-import PieChart from "../components/PieChart.vue";
-import ComputerAccountingRecords from "../components/ComputerAccountingRecords.vue";
-import RecordItem from "../components/RecordItem.vue";
-import ComputerRecordModal from "../components/ComputerRecordModal.vue";
-import axios from "axios";
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
+import PieChart from '../components/PieChart.vue';
+import ComputerAccountingRecords from '../components/ComputerAccountingRecords.vue';
+import RecordItem from '../components/RecordItem.vue';
+import ComputerRecordModal from '../components/ComputerRecordModal.vue';
+import axios from 'axios';
 // import ComputerExchangeRate from "./components/ComputerExchangeRate.vue";
 
 // 響應式數據
@@ -64,90 +72,90 @@ const isDesktop = ref(window.innerWidth >= 768);
 let recordItemArry = ref([
   {
     id: 1,
-    category: "飲食",
+    category: '飲食',
     amount: 2000,
-    note: "這裡是備註",
-    date: "2025-03-25",
-    isIncome: "expense",
+    note: '這裡是備註',
+    date: '2025-03-25',
+    isIncome: 'expense',
   },
   {
     id: 2,
-    category: "投資",
+    category: '投資',
     amount: 2000,
-    note: "這裡是備註",
-    date: "2025-03-25",
-    isIncome: "income",
+    note: '這裡是備註',
+    date: '2025-03-25',
+    isIncome: 'income',
   },
   {
     id: 3,
-    category: "飲食",
+    category: '飲食',
     amount: 70,
-    note: "",
-    date: "2025-03-25",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-25',
+    isIncome: 'expense',
   },
   {
     id: 4,
-    category: "飲食",
+    category: '飲食',
     amount: 125,
-    note: "",
-    date: "2025-03-25",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-25',
+    isIncome: 'expense',
   },
   {
     id: 5,
-    category: "助學金",
+    category: '助學金',
     amount: 25000,
-    note: "金融服務",
-    date: "2025-03-25",
-    isIncome: "income",
+    note: '金融服務',
+    date: '2025-03-25',
+    isIncome: 'income',
   },
   {
     id: 6,
-    category: "飲食",
+    category: '飲食',
     amount: 89,
-    note: "",
-    date: "2025-03-27",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-27',
+    isIncome: 'expense',
   },
   {
     id: 7,
-    category: "飲食",
+    category: '飲食',
     amount: 85,
-    note: "",
-    date: "2025-03-27",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-27',
+    isIncome: 'expense',
   },
   {
     id: 8,
-    category: "零食",
+    category: '零食',
     amount: 166,
-    note: "洋芋片+泡麵",
-    date: "2025-03-30",
-    isIncome: "expense",
+    note: '洋芋片+泡麵',
+    date: '2025-03-30',
+    isIncome: 'expense',
   },
   {
     id: 9,
-    category: "飲食",
+    category: '飲食',
     amount: 128,
-    note: "",
-    date: "2025-03-30",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-30',
+    isIncome: 'expense',
   },
   {
     id: 10,
-    category: "生活",
+    category: '生活',
     amount: 99,
-    note: "",
-    date: "2025-03-30",
-    isIncome: "expense",
+    note: '',
+    date: '2025-03-30',
+    isIncome: 'expense',
   },
 ]);
 
 const cleanupController = new AbortController();
 
 function fetchData() {
-  console.log("這裡是 HomeView 組件的 fetchData()的開始，執行fetchData()");
+  console.log('這裡是 HomeView 組件的 fetchData()的開始，執行fetchData()');
 
   return axios
     .get(`${process.env.VUE_APP_BACKEND_API_URL}/test/getRecords`, {
@@ -161,22 +169,22 @@ function fetchData() {
           category: item.category,
           amount: item.amount,
           note: item.note,
-          date: new Date(item.date).toISOString().split("T")[0],
+          date: new Date(item.date).toISOString().split('T')[0],
           isIncome: item.isIncome,
         };
       });
 
       console.log(
-        "這裡是 HomeView 組件的 fetchData()，從後端取得的資料res.data.records",
+        '這裡是 HomeView 組件的 fetchData()，從後端取得的資料res.data.records',
         res.data.records
       );
       // console.log("recordItemArry", recordItemArry.value);
       // console.log("typeof recordItemArry", typeof recordItemArry.value);
-      console.log("這裡是 HomeView 組件的 fetchData()結束");
+      console.log('這裡是 HomeView 組件的 fetchData()結束');
     })
     .catch((err) => {
       if (!axios.isCancel(err)) {
-        console.log("獲取資料失敗", err);
+        console.log('獲取資料失敗', err);
       }
       throw err;
     });
@@ -184,12 +192,12 @@ function fetchData() {
 
 onBeforeUnmount(() => {
   cleanupController.abort();
-  window.removeEventListener("resize", handleResize);
+  window.removeEventListener('resize', handleResize);
 
   // 强制清理可能的内存泄漏
   if (window.performance && window.performance.memory) {
     if (window.performance.memory.usedJSHeapSize > 200 * 1024 * 1024) {
-      console.warn("检测到内存使用过高，建议刷新页面");
+      console.warn('检测到内存使用过高，建议刷新页面');
     }
   }
 });
@@ -197,7 +205,7 @@ onBeforeUnmount(() => {
 // 放置支出的類別及金額的物件
 const expenseCategoryTotals = computed(() => {
   return recordItemArry.value
-    .filter((item) => item.isIncome === "expense")
+    .filter((item) => item.isIncome === 'expense')
     .reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = 0;
@@ -210,7 +218,7 @@ const expenseCategoryTotals = computed(() => {
 
 const incomeCategoryTotals = computed(() => {
   return recordItemArry.value
-    .filter((item) => item.isIncome === "income")
+    .filter((item) => item.isIncome === 'income')
     .reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = 0;
@@ -263,31 +271,31 @@ const chartOptions = ref({
 // 紀錄這個月總收入、支出
 const monthlyIncome = computed(() => {
   return recordItemArry.value
-    .filter((item) => item.isIncome === "income")
+    .filter((item) => item.isIncome === 'income')
     .map((item) => item.amount)
     .reduce((sum, amount) => sum + amount, 0);
 });
 const monthlyExpenditure = computed(() => {
   return recordItemArry.value
-    .filter((item) => item.isIncome === "expense")
+    .filter((item) => item.isIncome === 'expense')
     .map((item) => item.amount)
     .reduce((sum, amount) => sum + amount, 0);
 });
 
 // 綁定下拉選擇的值
-const selectedChartCategory = ref("expense");
+const selectedChartCategory = ref('expense');
 // 如果selectedChartCategory.value有變化，更改chartData的labels和data
 let chartData = ref({
   labels: [],
   datasets: [
     {
-      label: "支出",
+      label: '支出',
       data: [],
       backgroundColor: [
-        "rgb(255, 99, 132)",
-        "rgb(54, 162, 235)",
-        "rgb(255, 205, 86)",
-        "rgb(75, 192, 192)",
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
       ],
     },
   ],
@@ -296,9 +304,9 @@ let chartData = ref({
 watch(
   [selectedChartCategory, expenseCategoryTotals, incomeCategoryTotals],
   ([newCategory, expenseTotals, incomeTotals]) => {
-    console.log("這裡是 HomeView 中的 watch 開始 ，watch: chartData 更新中");
+    console.log('這裡是 HomeView 中的 watch 開始 ，watch: chartData 更新中');
 
-    const totals = newCategory === "expense" ? expenseTotals : incomeTotals;
+    const totals = newCategory === 'expense' ? expenseTotals : incomeTotals;
     const labels = Object.keys(totals);
     const data = Object.values(totals);
 
@@ -306,20 +314,20 @@ watch(
       labels,
       datasets: [
         {
-          label: newCategory === "expense" ? "支出" : "收入",
+          label: newCategory === 'expense' ? '支出' : '收入',
           data: data.length > 0 ? data : [0],
           backgroundColor: [
-            "rgb(255, 99, 132)",
-            "rgb(54, 162, 235)",
-            "rgb(255, 205, 86)",
-            "rgb(75, 192, 192)",
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)',
+            'rgb(75, 192, 192)',
           ],
         },
       ],
     };
 
     console.log(
-      "這裡是 HomeView 中的 watch 結束 ，chartData 更新完成",
+      '這裡是 HomeView 中的 watch 結束 ，chartData 更新完成',
       chartData.value
     );
   },
@@ -334,17 +342,20 @@ async function handleModalData() {
 
 // 刪除指定的記帳項目
 const handleDeleteItem = async (id) => {
-  console.log("handleDeleteItem()執行");
-  console.log("刪除的項目ID:", id);
+  console.log('handleDeleteItem()執行');
+  console.log('刪除的項目ID:', id);
   try {
-    await axios.delete(`${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecord/${id}`, {
-      withCredentials: true,
-    });
-    console.log("刪除成功");
+    await axios.delete(
+      `${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecord/${id}`,
+      {
+        withCredentials: true,
+      }
+    );
+    console.log('刪除成功');
     await fetchData(); // 重新獲取資料以更新畫面
-    console.log("handleDeleteItem()結束");
+    console.log('handleDeleteItem()結束');
   } catch (err) {
-    console.log("刪除失敗", err);
+    console.log('刪除失敗', err);
   }
 };
 
@@ -355,7 +366,7 @@ const handleResize = () => {
 
 // 生命周期
 onMounted(async () => {
-  window.addEventListener("resize", handleResize);
+  window.addEventListener('resize', handleResize);
   await fetchData();
 });
 
@@ -401,18 +412,47 @@ onBeforeUnmount(() => {
 // });
 
 axios
-  .get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, { withCredentials: true })
+  .get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
+    withCredentials: true,
+  })
   .then((response) => {
-    console.log("這裡是HomeView的384行，登入成功", response.data);
+    console.log('這裡是HomeView的384行，登入成功', response.data);
   })
   .catch((error) => {
     if (error.response && error.response.status === 401) {
-      console.log("未登入，導向登入頁面");
-      window.location.href = "/auth/login";
+      console.log('未登入，導向登入頁面');
+      window.location.href = '/auth/login';
     } else {
-      console.log("發生錯誤", error);
+      console.log('發生錯誤', error);
     }
   });
+
+
+const latitude = ref(null)
+const longitude = ref(null)
+const error = ref('')
+
+const getLocation = () => {
+  if (!navigator.geolocation) {
+    error.value = '瀏覽器不支援定位功能'
+    return
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      latitude.value = position.coords.latitude
+      longitude.value = position.coords.longitude
+      error.value = ''
+    },
+    (err) => {
+      console.error(err)
+      error.value = '無法取得位置資訊，請允許瀏覽器定位或重試'
+    }
+  )
+}
+
+
+
 </script>
 
 <style scoped>
