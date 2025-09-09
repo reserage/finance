@@ -94,7 +94,7 @@
 
     <v-dialog v-model="dialog" max-width="600">
       <v-card>
-        <v-card-title class="text-h6">新增事件</v-card-title>
+        <v-card-title class="text-h6">{{ vDialogTitleText }}</v-card-title>
         <v-card-text>
           <v-form v-model="valid" ref="form">
             <!-- 標題 -->
@@ -168,7 +168,18 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn text @click="dialog = false">取消</v-btn>
-          <v-btn color="primary" @click="submitEvent">新增</v-btn>
+          <v-btn v-if="isAddingEvent" color="primary" @click="submitEvent"
+            >新增</v-btn
+          >
+          <v-btn
+            v-if="!isAddingEvent"
+            color="primary"
+            @click="updateEvent(eventForm.id, eventForm)"
+            >修改</v-btn
+          >
+          <v-btn v-if="!isAddingEvent" color="red" @click="deleteEvent"
+            >刪除</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -184,7 +195,8 @@ import {
   goNext,
   goToday,
 } from '@/utils/toastCalendarBaseAPI';
-import useCalendar from '@/composables/MyCalendar/useCalendarConfig';
+import useCalendarConfig from '@/composables/MyCalendar/useCalendarConfig';
+import useCalendarButtonFunction from '@/composables/MyCalendar/useCalendarButtonFunction';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 
 const calendar = ref(null);
@@ -192,26 +204,35 @@ const dayCalendar = ref(null);
 let cal = null;
 let dayCal = null;
 
-const {
-  eventForm,
-  calEvents,
-  calCategories,
-  submitEvent,
-  setCalendarsInstances,
-} = useCalendar();
-
 const currentDateText = ref('');
 const dayCurrentDateText = ref('');
 const calendarView = ref('月');
 const dialog = ref(false);
+const vDialogTitleText = ref('新增事件');
+let isAddingEvent = true;
 const navModel = ref(false);
+
+const {
+  eventForm,
+  calEvents,
+  calCategories,
+  formatDateForInput,
+  setCalendarsInstances,
+  resetEventForm,
+} = useCalendarConfig();
+const { submitEvent, deleteEvent, updateEvent } = useCalendarButtonFunction(
+  eventForm,
+  dialog
+);
+
+//todo 把button的動作做出來並放到獨立的檔案裡
 
 //info main calendar
 onMounted(() => {
   cal = new Calendar(calendar.value, {
     defaultView: 'month',
     useFormPopup: false,
-    useDetailPopup: true,
+    useDetailPopup: false,
     week: {},
     calendars: calCategories,
   });
@@ -227,12 +248,65 @@ onMounted(() => {
     dayCurrentDateText.value = updateCurrentDate(dayCal);
   });
 
-  cal.on('clickEvent', (event) => {
+  cal.on('clickEvent', (info) => {
+    console.log('使用者點了事件:', info);
+    const event = info.event;
+
+    dialog.value = true;
+    vDialogTitleText.value = '修改或刪除事件';
+    isAddingEvent = false;
+
+    Object.assign(eventForm.value, {
+      id: event.id,
+      title: event.title,
+      calendarId: event.calendarId,
+      start: formatDateForInput(event.start, event.isAllday),
+      end: formatDateForInput(event.end, event.isAllday),
+      isAllDay: event.isAllday,
+      location: event.location,
+      body: event.body,
+    });
+  });
+
+  cal.on('beforeUpdateEvent', async (updateData) => {
+    const { event, changes } = updateData;
+
+    console.log('原本事件:', event);
+    console.log('更動內容:', changes);
+
+    let updatedEvent = { ...event };
+    updatedEvent.start = formatDateForInput(changes.start, event.isAllday);
+    updatedEvent.end = formatDateForInput(changes.end, event.isAllday);
+
+    updateEvent(updatedEvent.id, updatedEvent);
+  });
+
+  // 初始化日期顯示
+  currentDateText.value = updateCurrentDate(cal);
+});
+
+//info day calendar
+onMounted(() => {
+  dayCal = new Calendar(dayCalendar.value, {
+    defaultView: 'day',
+    useFormPopup: false,
+    useDetailPopup: false,
+    week: {},
+    calendars: calCategories,
+  });
+
+  // 加一些事件
+  dayCal.createEvents(calEvents);
+
+  dayCal.on('selectDateTime', (event) => {
+    console.log('使用者點了日期格子:', event);
+  });
+
+  dayCal.on('clickEvent', (event) => {
     console.log('使用者點了事件:', event);
   });
 
-  //todo fetch相關的改成axios
-  cal.on('beforeUpdateEvent', (updateData) => {
+  dayCal.on('beforeUpdateEvent', (updateData) => {
     console.log(updateData);
 
     const { event, changes } = updateData;
@@ -251,31 +325,6 @@ onMounted(() => {
     });
   });
 
-  // 初始化日期顯示
-  currentDateText.value = updateCurrentDate(cal);
-});
-
-//info day calendar
-onMounted(() => {
-  dayCal = new Calendar(dayCalendar.value, {
-    defaultView: 'day',
-    useFormPopup: false,
-    useDetailPopup: true,
-    week: {},
-    calendars: calCategories,
-  });
-
-  // 加一些事件
-  dayCal.createEvents(calEvents);
-
-  dayCal.on('selectDateTime', (event) => {
-    console.log('使用者點了日期格子:', event);
-  });
-
-  dayCal.on('clickEvent', (event) => {
-    console.log('使用者點了事件:', event);
-  });
-
   dayCurrentDateText.value = updateCurrentDate(dayCal);
   setCalendarsInstances(cal, dayCal);
 });
@@ -287,6 +336,14 @@ watch(calendarView, (newValue) => {
 watch(navModel, (newValue) => {
   if (!newValue) {
     cal.clearGridSelections();
+  }
+});
+
+watch(dialog, (newValue) => {
+  if (newValue === false) {
+    isAddingEvent = true;
+    vDialogTitleText.value = '新增事件';
+    resetEventForm();
   }
 });
 

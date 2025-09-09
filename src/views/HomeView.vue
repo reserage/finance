@@ -427,32 +427,39 @@ axios
     }
   });
 
-
-const latitude = ref(null)
-const longitude = ref(null)
-const error = ref('')
+const latitude = ref(null);
+const longitude = ref(null);
+const error = ref('');
 
 const getLocation = () => {
   if (!navigator.geolocation) {
-    error.value = '瀏覽器不支援定位功能'
-    return
+    error.value = '瀏覽器不支援定位功能';
+    return;
   }
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      latitude.value = position.coords.latitude
-      longitude.value = position.coords.longitude
-      error.value = ''
+      latitude.value = position.coords.latitude;
+      longitude.value = position.coords.longitude;
+      error.value = '';
     },
     (err) => {
-      console.error(err)
-      error.value = '無法取得位置資訊，請允許瀏覽器定位或重試'
+      console.error(err);
+      error.value = '無法取得位置資訊，請允許瀏覽器定位或重試';
     }
-  )
-}
+  );
+};
 
+//* 取得最新的匯率
+  const getLatestExchangeRate = async (currency) => {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/exchangeRate/${currency}`
+    );
 
+    return response.data.data;
+  };
 
+  getLatestExchangeRate('TWD');
 </script>
 
 <style scoped>
