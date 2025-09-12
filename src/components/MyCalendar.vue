@@ -227,13 +227,25 @@ const { submitEvent, deleteEvent, updateEvent } = useCalendarButtonFunction(
 
 //todo 把button的動作做出來並放到獨立的檔案裡
 
+//!!!!!!  新建一個事件後再立即更新(刪除也會)會發生錯誤，傳給後端的event id是錯誤的
+
 //info main calendar
 onMounted(() => {
   cal = new Calendar(calendar.value, {
     defaultView: 'month',
     useFormPopup: false,
     useDetailPopup: false,
+    usageStatistics: false,
+    month: {
+      scheduleView: true,
+      showTime: false,
+    },
     week: {},
+    template: {
+      time(schedule) {
+        return schedule.title;
+      },
+    },
     calendars: calCategories,
   });
 
@@ -241,7 +253,6 @@ onMounted(() => {
   cal.createEvents(calEvents);
 
   cal.on('selectDateTime', (event) => {
-    console.log('使用者點了日期格子:', event);
     navModel.value = true;
     dayCal.setDate(event.start);
 
