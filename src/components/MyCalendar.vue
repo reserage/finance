@@ -116,14 +116,14 @@
             ></v-select>
 
             <!-- 整天事件切換 -->
-            <v-switch v-model="eventForm.isAllDay" label="整天事件"></v-switch>
+            <v-switch v-model="eventForm.isAllday" label="整天事件"></v-switch>
 
             <!-- 開始時間 -->
             <v-text-field
               v-model="eventForm.start"
               label="開始時間"
               type="datetime-local"
-              v-if="!eventForm.isAllDay"
+              v-if="!eventForm.isAllday"
               required
             ></v-text-field>
             <v-text-field
@@ -139,7 +139,7 @@
               v-model="eventForm.end"
               label="結束時間"
               type="datetime-local"
-              v-if="!eventForm.isAllDay"
+              v-if="!eventForm.isAllday"
               required
             ></v-text-field>
             <v-text-field
@@ -227,7 +227,6 @@ const { submitEvent, deleteEvent, updateEvent } = useCalendarButtonFunction(
 
 //todo 把button的動作做出來並放到獨立的檔案裡
 
-//!!!!!!  新建一個事件後再立即更新(刪除也會)會發生錯誤，傳給後端的event id是錯誤的
 
 //info main calendar
 onMounted(() => {
@@ -258,7 +257,7 @@ onMounted(() => {
 
     dayCurrentDateText.value = updateCurrentDate(dayCal);
   });
-
+  //! 在填寫表單時，如果設定為全天，沒設定時間，會導致錯誤
   cal.on('clickEvent', (info) => {
     console.log('使用者點了事件:', info);
     const event = info.event;
@@ -273,7 +272,7 @@ onMounted(() => {
       calendarId: event.calendarId,
       start: formatDateForInput(event.start, event.isAllday),
       end: formatDateForInput(event.end, event.isAllday),
-      isAllDay: event.isAllday,
+      isAllday: event.isAllday,
       location: event.location,
       body: event.body,
     });

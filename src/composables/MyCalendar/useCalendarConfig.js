@@ -4,7 +4,6 @@ import { onMounted, ref } from 'vue';
 let calInstance = null;
 let dayCalInstance = null;
 
-
 //! event的 id 屬性是來自 DB 的 _id
 export default function useCalendar() {
   //! calendarId 這個屬性是指 事件的分類(私人、工作...)
@@ -14,7 +13,7 @@ export default function useCalendar() {
     title: '',
     start: '',
     end: '',
-    isAllDay: false,
+    isAllday: false,
     category: 'time',
     location: '',
     body: '',
@@ -48,7 +47,7 @@ export default function useCalendar() {
       title: '測試',
       start: '2025-08-30',
       end: '2025-08-30',
-      isAllDay: true,
+      isAllday: true,
       category: 'allday',
     },
     {
@@ -60,24 +59,7 @@ export default function useCalendar() {
     },
   ];
 
-  onMounted(async () => {
-    const response = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
-      { withCredentials: true }
-    );
-
-    const events = response.data.data.events.map((event) => {
-      return { id: event._id, ...event };
-    });
-
-    calEvents = events;
-    calInstance.clear();
-    calInstance.createEvents(calEvents);
-    dayCalInstance.clear();
-    dayCalInstance.createEvents(calEvents);
-    // calInstance.render();
-    // calInstance.deleteEvent('1', 'cal1');
-  });
+  onMounted(refreshCalendarEvents);
 
   //todo 是否要改成從後端撈?
   const calCategories = [
@@ -93,37 +75,8 @@ export default function useCalendar() {
     },
   ];
 
-  // async function submitEvent() {
-  //   const newEvent = [
-  //     {
-  //       id: String(Date.now()),
-  //       calendarId: eventForm.value.calendarId,
-  //       title: eventForm.value.title,
-  //       start: eventForm.value.start,
-  //       end: eventForm.value.end, // 結束時間等於開始時間
-  //       isAllDay: eventForm.value.isAllDay,
-  //       category: eventForm.value.isAllDay ? 'allday' : 'time',
-  //     },
-  //   ];
-  //   calInstance.createEvents(newEvent);
-  //   dayCalInstance.createEvents(newEvent);
-
-  //   await axios.post(
-  //     `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
-  //     {
-  //       title: newEvent[0].title,
-  //       calendarId: newEvent[0].calendarId,
-  //       start: newEvent[0].start,
-  //       end: newEvent[0].end,
-  //       isAllday: newEvent[0].isAllDay,
-  //       category: newEvent[0].category,
-  //     },
-  //     { withCredentials: true }
-  //   );
-  //   dialog.value = false;
-  // }
-
   function formatDateForInput(date, isAllDay) {
+    if (!date) return alert('日期格式錯誤');
     const jsDate = date.d; // 取出內部的原生 Date
     if (!jsDate) return '';
 
@@ -147,7 +100,7 @@ export default function useCalendar() {
       title: '',
       start: '',
       end: '',
-      isAllDay: false,
+      isAllday: false,
       category: 'time',
       location: '',
       body: '',
@@ -163,6 +116,25 @@ export default function useCalendar() {
     return { calInstance, dayCalInstance };
   }
 
+  async function refreshCalendarEvents() {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
+      { withCredentials: true }
+    );
+
+    const events = response.data.data.events.map((event) => {
+      return { id: event._id, ...event };
+    });
+
+    calEvents = events;
+    calInstance.clear();
+    calInstance.createEvents(calEvents);
+    dayCalInstance.clear();
+    dayCalInstance.createEvents(calEvents);
+    // calInstance.render();
+    // calInstance.deleteEvent('1', 'cal1');
+  }
+
   return {
     eventForm,
     calEvents,
@@ -171,5 +143,6 @@ export default function useCalendar() {
     setCalendarsInstances,
     resetEventForm,
     getCalendarInstances,
+    refreshCalendarEvents,
   };
 }

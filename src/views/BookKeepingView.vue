@@ -358,11 +358,11 @@ const handleAmountChangeAndCategoryChange = debounce(
     minAmountErrorMessage.value = '';
     maxAmountErrorMessage.value = '';
 
+    const isIncome =
+        selectExpenseOrIncome.value === 'income' ? true : false;
     let filterFn;
     // 如果 min 和 max 都有值，才做比較與錯誤提示
     if (!isNaN(min) && !isNaN(max)) {
-      const isIncome =
-        selectExpenseOrIncome.value === 'isIncome' ? true : false;
 
       if (min > max) {
         if (max === Number(oldMax)) {
@@ -374,6 +374,7 @@ const handleAmountChangeAndCategoryChange = debounce(
         }
         return;
       }
+      console.log('isIncome: ', isIncome);
       filterFn = (record) =>
         record.amount >= min &&
         record.amount <= max &&
@@ -381,24 +382,23 @@ const handleAmountChangeAndCategoryChange = debounce(
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else if (!isNaN(min)) {
-      const isIncome =
-        selectExpenseOrIncome.value === 'isIncome' ? true : false;
+      
       filterFn = (record) =>
         record.amount >= min &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else if (!isNaN(max)) {
-      const isIncome =
-        selectExpenseOrIncome.value === 'isIncome' ? true : false;
+      
       filterFn = (record) =>
         record.amount <= max &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else {
-      const isIncome =
-        selectExpenseOrIncome.value === 'isIncome' ? true : false;
+      
+      console.log('selectExpenseOrIncome.value: ', selectExpenseOrIncome.value);
+      console.log('isIncome: ', isIncome);
       filterFn = (record) =>
         true &&
         (selectValue.value.length === 0 ||

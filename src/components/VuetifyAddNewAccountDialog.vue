@@ -30,7 +30,11 @@
           <v-select
             v-model="form.category"
             label="類別"
-            :items="props.selectItems"
+            :items="
+              props.allCategoriesData.filter((item) => item.isIncome === form.isIncome)
+            "
+            item-title="name"
+            item-value="name"
             required
           />
           <v-textarea v-model="form.note" label="備註" />

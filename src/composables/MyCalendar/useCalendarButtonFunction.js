@@ -1,13 +1,22 @@
 import axios from 'axios';
 import useCalendarConfig from './useCalendarConfig';
-// import { ref } from 'vue';
-// let calInstance;
-// let dayCalInstance;
+import api from '@/utils/api.js';
 
 export default function useCalendarButtonFunction(eventForm, dialog) {
+  //* 因為line通知原故不能這樣做-------------------------------
+  //! 行事曆事件的前端處理邏輯：
+  //! 前端在建立新事件時，事件的 id 會先使用時間戳記產生字串。
+  //! 為避免與後端資料庫自動生成的 id 發生衝突，
+  //! 前端建立事件時僅更新行事曆元件 (不立即呼叫 API)。
+  //! 當 calendar 頁面卸載時，才會一次性將所有事件透過 API 寫入資料庫。
+  //* ------------------------------------------------------
+
+  //! 每次呼叫 create Event API 時都刷新一次畫面
+
   async function submitEvent() {
+    const calendarConfig = useCalendarConfig();
     const { calInstance, dayCalInstance } =
-      useCalendarConfig().getCalendarInstances();
+      calendarConfig.getCalendarInstances();
 
     // const instances = useCalendarConfig().getCalendarInstances();
     // calInstance = instances.calInstance;
@@ -20,27 +29,33 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
         title: eventForm.value.title,
         start: eventForm.value.start,
         end: eventForm.value.end, // 結束時間等於開始時間
-        isAllDay: eventForm.value.isAllDay,
-        category: eventForm.value.isAllDay ? 'allday' : 'time',
+        isAllday: eventForm.value.isAllday,
+        category: eventForm.value.isAllday ? 'allday' : 'time',
       },
     ];
 
     calInstance.createEvents(newEvent);
     dayCalInstance.createEvents(newEvent);
 
-    await axios.post(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
-      {
-        title: newEvent[0].title,
-        calendarId: newEvent[0].calendarId,
-        start: newEvent[0].start,
-        end: newEvent[0].end,
-        isAllday: newEvent[0].isAllDay,
-        category: newEvent[0].category,
-      },
-      { withCredentials: true }
-    );
-    dialog.value = false;
+    try {
+      await api.post(
+        `/calendar`,
+        {
+          title: newEvent[0].title,
+          calendarId: newEvent[0].calendarId,
+          start: newEvent[0].start,
+          end: newEvent[0].end,
+          isAllday: newEvent[0].isAllday,
+          category: newEvent[0].category,
+        },
+        { withCredentials: true }
+      );
+      dialog.value = false;
+      await calendarConfig.refreshCalendarEvents();
+    } catch (error) {
+      // 這裡錯誤已經被攔截器處理過了，所以通常不用再彈窗
+      console.warn('submitEvent 捕捉到錯誤:', error.message);
+    }
   }
 
   async function deleteEvent() {
