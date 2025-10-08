@@ -227,7 +227,6 @@ const { submitEvent, deleteEvent, updateEvent } = useCalendarButtonFunction(
 
 //todo 把button的動作做出來並放到獨立的檔案裡
 
-
 //info main calendar
 onMounted(() => {
   cal = new Calendar(calendar.value, {
@@ -257,26 +256,7 @@ onMounted(() => {
 
     dayCurrentDateText.value = updateCurrentDate(dayCal);
   });
-  //! 在填寫表單時，如果設定為全天，沒設定時間，會導致錯誤
-  cal.on('clickEvent', (info) => {
-    console.log('使用者點了事件:', info);
-    const event = info.event;
-
-    dialog.value = true;
-    vDialogTitleText.value = '修改或刪除事件';
-    isAddingEvent = false;
-
-    Object.assign(eventForm.value, {
-      id: event.id,
-      title: event.title,
-      calendarId: event.calendarId,
-      start: formatDateForInput(event.start, event.isAllday),
-      end: formatDateForInput(event.end, event.isAllday),
-      isAllday: event.isAllday,
-      location: event.location,
-      body: event.body,
-    });
-  });
+  // //! 在填寫表單時，如果設定為全天，沒設定時間，會導致錯誤
 
   cal.on('beforeUpdateEvent', async (updateData) => {
     const { event, changes } = updateData;
@@ -312,8 +292,23 @@ onMounted(() => {
     console.log('使用者點了日期格子:', event);
   });
 
-  dayCal.on('clickEvent', (event) => {
-    console.log('使用者點了事件:', event);
+  dayCal.on('clickEvent', (info) => {
+    console.log('使用者點了事件:', info);
+    const event = info.event;
+
+    Object.assign(eventForm.value, {
+      id: event.id,
+      title: event.title,
+      calendarId: event.calendarId,
+      start: formatDateForInput(event.start, event.isAllday),
+      end: formatDateForInput(event.end, event.isAllday),
+      isAllday: event.isAllday,
+      location: event.location,
+      body: event.body,
+    });
+
+    isAddingEvent = false;
+    dialog.value = true;
   });
 
   dayCal.on('beforeUpdateEvent', (updateData) => {
@@ -325,14 +320,18 @@ onMounted(() => {
     console.log('更動內容:', changes);
 
     // 例如把更新傳回後端
-    fetch(`/api/events/${event.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(changes),
-    }).then(() => {
-      // 前端同步更新事件
-      cal.updateEvent(event.id, event.calendarId, changes);
-    });
+
+    let updatedEvent = { ...event };
+    updatedEvent.start = formatDateForInput(
+      changes.start == undefined ? event.start : changes.start,
+      event.isAllday
+    );
+    updatedEvent.end = formatDateForInput(
+      changes.end == undefined ? event.end : changes.end,
+      event.isAllday
+    );
+
+    updateEvent(updatedEvent.id, updatedEvent);
   });
 
   dayCurrentDateText.value = updateCurrentDate(dayCal);
@@ -385,5 +384,9 @@ function closeDayCalendar() {
 
 .toastui-calendar-time {
   flex: 1;
+}
+
+.toastui-calendar-weekday-events .toastui-calendar-weekday-event-block {
+  pointer-events: none;
 }
 </style>

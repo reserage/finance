@@ -12,13 +12,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response) {
       // HTTP 錯誤
-      console.error(
-        `API 錯誤 [${error.response.status}]:`,
-        error.response.data
-      );
       if (error.response.status === 401) {
         // 例如: 未登入，導向登入頁
-        window.location.href = '/login';
+        window.location.href = '/auth/login';
+        window.alert('請先登入');
       } else if (error.response.status === 400) {
         //* 填寫事件時，若有欄位未填寫完整，會回傳 400 錯誤
         if (error.response.data.message === 'Missing required fields') {

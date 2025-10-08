@@ -1,4 +1,5 @@
-import axios from 'axios';
+
+import api from '@/utils/api.js';
 import { onMounted, ref } from 'vue';
 
 let calInstance = null;
@@ -117,7 +118,7 @@ export default function useCalendar() {
   }
 
   async function refreshCalendarEvents() {
-    const response = await axios.get(
+    const response = await api.get(
       `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
       { withCredentials: true }
     );

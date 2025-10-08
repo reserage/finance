@@ -23,21 +23,24 @@
 
     <v-list density="compact" nav>
       <v-list-item
-        prepend-icon="mdi-home"
-        title="Home"
-        value="HomeView"
-        @click="currentView = 'HomeView'"
+        prepend-icon="mdi-book"
+        title="記帳本"
+        value="accountBook"
+        v-if="isAuthenticated"
+        @click="currentView = 'AccountBookView'"
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-chart-bar"
         title="統計與分析"
         value="StatisticsView"
+        v-if="isAuthenticated"
         @click="currentView = 'StatisticsView'"
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-calendar"
         title="日歷"
         value="CalendarView"
+        v-if="isAuthenticated"
         @click="currentView = 'CalendarView'"
       ></v-list-item>
       <v-list-item
@@ -54,6 +57,7 @@
         v-if="!isAuthenticated"
         @click="currentView = 'RegisterView'"
       ></v-list-item>
+
       <v-list-item
         prepend-icon="mdi-logout"
         title="登出"
@@ -61,28 +65,14 @@
         v-if="isAuthenticated"
         @click="handleLogOut"
       ></v-list-item>
-      <v-list-item
-        prepend-icon="mdi-logout"
-        title="測試"
-        value="logout"
-        v-if="isAuthenticated"
-        @click="currentView = 'AccountBookView'"
-      ></v-list-item>
-      <v-list-item
-        prepend-icon="mdi-logout"
-        title="記帳本"
-        value="logout"
-        v-if="isAuthenticated"
-        @click="currentView = 'BookKeepingView'"
-      ></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
 <script setup>
-import axios from "axios";
-import { computed, onMounted, ref, watch } from "vue";
-import { useDisplay } from "vuetify/lib/composables/display";
-import { useRouter, useRoute } from "vue-router";
+import axios from 'axios';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useDisplay } from 'vuetify/lib/composables/display';
+import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 
@@ -99,7 +89,7 @@ const drawer = ref(!isMobile.value);
 const userThumbnail = computed(() =>
   userInfo.value.thumbnail
     ? userInfo.value.thumbnail
-    : new URL("@/assets/NoImage.png", import.meta.url).href
+    : new URL('@/assets/NoImage.png', import.meta.url).href
 );
 
 // 取得用戶信息並確認是否登入
@@ -107,15 +97,18 @@ let userInfo = ref({});
 const isAuthenticated = ref(false);
 onMounted(async () => {
   try {
-    const res = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
-      withCredentials: true,
-    });
+    const res = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`,
+      {
+        withCredentials: true,
+      }
+    );
     isAuthenticated.value = res.data.isAuthenticated;
     userInfo.value = res.data.user;
-    console.log("User Info:", userInfo);
+    console.log('User Info:', userInfo);
   } catch (e) {
     isAuthenticated.value = false;
-    console.error("Error checking login status:", e);
+    console.error('Error checking login status:', e);
   }
 });
 
@@ -123,15 +116,18 @@ watch(
   () => route.fullPath,
   async () => {
     try {
-      const res = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/auth/checkLogin`,
+        {
+          withCredentials: true,
+        }
+      );
       isAuthenticated.value = res.data.isAuthenticated;
       userInfo.value = res.data.user;
-      console.log("User Info:", userInfo);
+      console.log('User Info:', userInfo);
     } catch (e) {
       isAuthenticated.value = false;
-      console.error("Error checking login status:", e);
+      console.error('Error checking login status:', e);
     }
   }
 );
@@ -148,17 +144,17 @@ function handleLogOut() {
     .then(() => {
       isAuthenticated.value = false;
       userInfo.value = {};
-      router.push({ name: "LoginView" });
+      router.push({ name: 'LoginView' });
     })
     .catch((error) => {
-      console.error("登出失敗:", error);
+      console.error('登出失敗:', error);
     });
 }
 
-const currentView = ref("");
+const currentView = ref('');
 
 watch(currentView, (newValue) => {
-  console.log("View changed to:", newValue);
+  console.log('View changed to:', newValue);
   router.push({ name: newValue });
 });
 </script>

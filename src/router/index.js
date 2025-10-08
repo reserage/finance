@@ -2,7 +2,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import ComputerExchangeRate from "@/components/ComputerExchangeRate.vue";
 import ComputerAccountingRecords from "@/components/ComputerAccountingRecords.vue";
-import HomeView from "@/views/HomeView.vue";
+// import HomeView from "@/views/HomeView.vue";
 import AccountBookView from "@/views/AccountBookView.vue";
 // 導入其他需要的組件
 
@@ -17,14 +17,13 @@ const routes = [
     name: "AccountingRecords",
     component: ComputerAccountingRecords,
   },
-  // 添加更多路由
+  // {
+  //   path: "/",
+  //   component: AccountBookView,
+  //   name: "HomeView",
+  // },
   {
     path: "/",
-    component: HomeView,
-    name: "HomeView",
-  },
-  {
-    path: "/accountBook",
     component: AccountBookView,
     name: "AccountBookView",
   },

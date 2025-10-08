@@ -88,6 +88,8 @@ onBeforeUnmount(() => {
 
 // 安全渲染函数
 const safeRender = async () => {
+  console.log(`刷新 ${chart.value} 圖形`);
+
   if (!isMounted.value || pendingRender.value) return;
 
   pendingRender.value = true;
@@ -139,7 +141,6 @@ watch(
   () => {
     nextTick(safeRender);
   },
-  { deep: true }
 );
 </script>
 
