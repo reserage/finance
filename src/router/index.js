@@ -51,6 +51,12 @@ const routes = [
     path: "/calendar",
     component: () => import("@/views/CalendarView.vue"),
     name: "CalendarView",
+  },
+  {
+    path: "/world-clock",
+    component: () => import("@/views/WorldClockView.vue"),
+    name: "WorldClockView",
+    meta: { cleanup: true }, // 添加自定义元字段
   }
 ];
 

@@ -1,4 +1,3 @@
-
 import api from '@/utils/api.js';
 import { onMounted, ref } from 'vue';
 
@@ -74,6 +73,7 @@ export default function useCalendar() {
       name: '工作',
       backgroundColor: '#00a9ff',
     },
+    { id: '3', name: '國慶假日', color: '#ffffff', backgroundColor: '#d32f2f' },
   ];
 
   function formatDateForInput(date, isAllDay) {
@@ -124,7 +124,12 @@ export default function useCalendar() {
     );
 
     const events = response.data.data.events.map((event) => {
-      return { id: event._id, ...event };
+      let bgColor;
+      if (event.isDone) {
+        bgColor = '#E0E0E0';
+      }
+
+      return { id: event._id, ...event, backgroundColor: bgColor };
     });
 
     calEvents = events;
@@ -134,6 +139,7 @@ export default function useCalendar() {
     dayCalInstance.createEvents(calEvents);
     // calInstance.render();
     // calInstance.deleteEvent('1', 'cal1');
+    return calEvents;
   }
 
   return {

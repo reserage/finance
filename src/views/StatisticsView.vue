@@ -127,12 +127,17 @@
           <div class="card bg-light p-3">
             <h2 class="card-title">預算對比</h2>
             <div class="card-body">
-              <div class="barChartContainer">
+              <div class="barChartContainer" v-if="hasBudget">
                 <PieChart
                   :chart-data="barData"
                   :chart-options="barOptions"
                   chart-type="bar"
                 />
+              </div>
+              <div v-if="!hasBudget">
+                <h4 class="text-center">
+                  尚未設定預算
+                </h4>
               </div>
             </div>
           </div>
@@ -147,6 +152,7 @@ import PieChart from '@/components/PieChart.vue';
 import { ref, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
 
+//*  ----------------- PieChart -------------------------
 let pieLabels = ref([]);
 let pieMoney = ref([]);
 
@@ -182,6 +188,7 @@ const pieOptions = ref({
   },
 });
 
+//* ----------- lineChart --------------------
 let lineLabels = ref([]);
 let lineMoney = ref([]);
 
@@ -209,13 +216,13 @@ const lineOptions = ref({
   },
 });
 
-//* barData
+//* --------------- barChart ---------------------------
 const barData = computed(() => ({
-  labels: categories,
+  labels: categories.value,
   datasets: [
     {
       label: '實際支出',
-      data: actualExpense,
+      data: actualExpense.value,
       backgroundColor: 'rgba(244, 67, 54, 0.7)',
       borderColor: 'rgba(244, 67, 54, 1)',
       borderWidth: 2,
@@ -223,7 +230,7 @@ const barData = computed(() => ({
     },
     {
       label: '設定預算',
-      data: budgetLimit,
+      data: budgetLimit.value,
       backgroundColor: 'rgba(75, 192, 192, 0.7)',
       borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 2,
@@ -303,13 +310,16 @@ const barOptions = ref({
   },
 });
 
-const categories = ['飲食', '交通', '娛樂', '購物', '水電', '其他'];
-const actualExpense = [12000, 3500, 8000, 15000, 5000, 5000];
-const budgetLimit = [10000, 4000, 6000, 18000, 5000, 7000];
+let categories = ref(['飲食', '交通', '娛樂', '購物', '水電', '其他']);
+let actualExpense = ref([12000, 3500, 8000, 15000, 5000, 5000]);
+let budgetLimit = ref([10000, 4000, 6000, 18000, 5000, 7000]);
+
+//* ----------------------------------------------------------
 
 const selectedDate = ref('default');
 const spendingTrendRadio = ref('month');
 const optionsMonths = ref([]);
+const hasBudget = ref(false);
 
 const currentMonthIncome = ref('');
 const currentMonthExpenditure = ref();
@@ -326,7 +336,24 @@ onMounted(async () => {
     );
     optionsMonths.value = response.data.months;
     selectedDate.value = optionsMonths.value[optionsMonths.value.length - 1]; // 預設選擇最新的月份
-    console.log('後端資料:', response.data);
+
+    //* --------------- 預算對比部分 ------------------
+    hasBudget.value = response.data.allData.data.budget.length > 0;
+    if (!hasBudget.value) {
+      categories.value = [];
+      budgetLimit.value = [];
+      actualExpense.value = [];
+    } else {
+      categories.value = response.data.allData.data.budget.map(
+        (item) => item.categoryName
+      );
+      budgetLimit.value = response.data.allData.data.budget.map(
+        (item) => item.budget
+      );
+      actualExpense.value = response.data.allData.data.budget.map(
+        (item) => item.total
+      );
+    }
 
     // 給要用到的資料賦值
     const backendData = response.data.allData.data;
@@ -356,6 +383,19 @@ watch(selectedDate, async (newValue) => {
   currentMonthIncome.value = backendData.totalIncome;
   currentMonthExpenditure.value = backendData.totalExpense;
   highSpendingCategories.value = backendData.sorted;
+
+  hasBudget.value = response.data.data.budget.length > 0;
+  if (!hasBudget.value) {
+    categories.value = [];
+    budgetLimit.value = [];
+    actualExpense.value = [];
+  } else {
+    categories.value = response.data.data.budget.map(
+      (item) => item.categoryName
+    );
+    budgetLimit.value = response.data.data.budget.map((item) => item.budget);
+    actualExpense.value = response.data.data.budget.map((item) => item.total);
+  }
 
   pieLabels.value = backendData.sorted.map((item) => item[0]);
   pieMoney.value = backendData.sorted.map((item) => item[1]);

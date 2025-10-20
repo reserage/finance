@@ -34,6 +34,17 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
       },
     ];
 
+    console.log('newEvent: ', newEvent);
+
+    if (
+      newEvent.title === '' ||
+      newEvent.start === '' ||
+      newEvent.end === '' ||
+      newEvent.calendarId === null
+    ) {
+      window.alert('請填寫所有必填欄位');
+    }
+
     calInstance.createEvents(newEvent);
     dayCalInstance.createEvents(newEvent);
 
@@ -91,5 +102,30 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
 
     dialog.value = false;
   }
-  return { submitEvent, deleteEvent, updateEvent };
+
+  async function compeleteEvent(id, data) {
+    const { calInstance, dayCalInstance } =
+      useCalendarConfig().getCalendarInstances();
+
+    await axios.patch(
+      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
+      { isDone: true },
+      { withCredentials: true }
+    );
+
+    console.log(calInstance, dayCalInstance);
+    console.log('data', data);
+
+    calInstance.updateEvent(data.id, data.calendarId, {
+      backgroundColor: '#E0E0E0',
+    });
+
+    dayCalInstance.updateEvent(data.id, data.calendarId, {
+      backgroundColor: '#E0E0E0',
+    });
+
+    dialog.value = false;
+  }
+
+  return { submitEvent, deleteEvent, updateEvent, compeleteEvent };
 }

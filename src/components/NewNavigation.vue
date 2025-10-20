@@ -43,6 +43,15 @@
         v-if="isAuthenticated"
         @click="currentView = 'CalendarView'"
       ></v-list-item>
+
+      <v-list-item
+        prepend-icon="mdi-clock"
+        title="世界時鐘"
+        value="WorldClockView"
+        v-if="isAuthenticated"
+        @click="currentView = 'WorldClockView'"
+      ></v-list-item>
+
       <v-list-item
         prepend-icon="mdi-login"
         title="登入"
