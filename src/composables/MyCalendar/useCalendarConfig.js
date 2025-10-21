@@ -132,14 +132,45 @@ export default function useCalendar() {
       return { id: event._id, ...event, backgroundColor: bgColor };
     });
 
+    const publicHolidayEvents = await getPublicHoliday();
+    console.log('publicHolidayEvents   ', publicHolidayEvents);
+
     calEvents = events;
     calInstance.clear();
-    calInstance.createEvents(calEvents);
+    calInstance.createEvents([...calEvents, ...publicHolidayEvents]);
     dayCalInstance.clear();
     dayCalInstance.createEvents(calEvents);
     // calInstance.render();
     // calInstance.deleteEvent('1', 'cal1');
     return calEvents;
+  }
+
+  async function getPublicHoliday() {
+    //* === 自動載入台灣假期 ===
+    try {
+      const year = new Date().getFullYear();
+      const response = await fetch(
+        `https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`
+      );
+      const holidays = await response.json();
+
+      const holidayEvents = holidays
+        .filter((d) => d.isHoliday === true && d.description)
+        .map((d, index) => ({
+          id: `holiday-${index}`,
+          calendarId: 'holiday',
+          title: d.description,
+          category: 'allday',
+          start: d.date,
+          end: d.date,
+          isAllday: true,
+          backgroundColor: '#d32f2f',
+        }));
+
+      return holidayEvents;
+    } catch (err) {
+      console.error('❌ 載入台灣假期失敗:', err);
+    }
   }
 
   return {
@@ -151,5 +182,6 @@ export default function useCalendar() {
     resetEventForm,
     getCalendarInstances,
     refreshCalendarEvents,
+    getPublicHoliday,
   };
 }

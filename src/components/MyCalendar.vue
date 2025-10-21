@@ -308,33 +308,6 @@ onMounted(async () => {
   // 加一些事件
   cal.createEvents(calEvents);
 
-  //* === 自動載入台灣假期 ===
-  try {
-    const year = new Date().getFullYear();
-    const response = await fetch(
-      `https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`
-    );
-    const holidays = await response.json();
-
-    const holidayEvents = holidays
-      .filter((d) => d.isHoliday === true && d.description)
-      .map((d, index) => ({
-        id: `holiday-${index}`,
-        calendarId: 'holiday',
-        title: d.description,
-        category: 'allday',
-        start: d.date,
-        end: d.date,
-        isAllday: true,
-        backgroundColor: '#d32f2f',
-      }));
-
-    cal.createEvents(holidayEvents);
-    console.log(`✅ 已載入 ${holidayEvents.length} 筆台灣假期`);
-  } catch (err) {
-    console.error('❌ 載入台灣假期失敗:', err);
-  }
-
   cal.on('selectDateTime', (event) => {
     navModel.value = true;
     dayCal.setDate(event.start);
