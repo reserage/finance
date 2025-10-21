@@ -74,26 +74,13 @@
                   type="radio"
                   class="btn-check"
                   name="btnradio"
-                  id="btnradio1"
-                  autocomplete="off"
-                  value="day"
-                  v-model="spendingTrendRadio"
-                />
-                <label class="btn btn-outline-primary" for="btnradio1"
-                  >日</label
-                >
-
-                <input
-                  type="radio"
-                  class="btn-check"
-                  name="btnradio"
                   id="btnradio2"
                   autocomplete="off"
                   value="month"
                   v-model="spendingTrendRadio"
                 />
                 <label class="btn btn-outline-primary" for="btnradio2"
-                  >月</label
+                  >周</label
                 >
 
                 <input
@@ -106,7 +93,7 @@
                   v-model="spendingTrendRadio"
                 />
                 <label class="btn btn-outline-primary" for="btnradio3"
-                  >年</label
+                  >月</label
                 >
               </div>
             </div>
@@ -123,11 +110,12 @@
         </div>
 
         <!-- 預算對比區塊 -->
+          <!-- 預算對比區塊 -->
         <div class="col-12 mb-4">
           <div class="card bg-light p-3">
             <h2 class="card-title">預算對比</h2>
             <div class="card-body">
-              <div class="barChartContainer" v-if="hasBudget">
+              <div class="barChartContainer" style="height: 400px" v-if="hasBudget">
                 <PieChart
                   :chart-data="barData"
                   :chart-options="barOptions"

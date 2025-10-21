@@ -54,8 +54,8 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
         {
           title: newEvent[0].title,
           calendarId: newEvent[0].calendarId,
-          start: newEvent[0].start,
-          end: newEvent[0].end,
+          start: new Date(newEvent[0].start).toISOString(),
+          end: new Date(newEvent[0].end).toISOString(),
           isAllday: newEvent[0].isAllday,
           category: newEvent[0].category,
         },

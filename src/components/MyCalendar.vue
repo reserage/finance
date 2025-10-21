@@ -54,7 +54,11 @@
     </v-navigation-drawer>
 
     <!-- 控制列 -->
-    <div style="display: flex; align-items: center; margin-bottom: 10px">
+    <div
+      v-if="sm || md || lg || xl"
+      style="display: flex; align-items: center; margin-bottom: 10px"
+    >
+      <!-- 這是電腦版 -->
       <v-btn-group>
         <v-btn
           @click="currentDateText = goPrev(cal)"
@@ -88,6 +92,52 @@
         style="margin-top: 0.1rem"
       ></v-select>
     </div>
+    <v-container v-else fluid class="pa-0">
+      <!-- 這是手機板 -->
+      <v-row class="mb-2">
+        <!-- 日期和選擇器：手機上佔滿整行，桌面上靠右 -->
+        <v-col
+          cols="12"
+          md=""
+          class="d-flex align-center justify-space-between justify-md-end pb-0"
+        >
+          <span class="text-h6 font-weight-bold">
+            {{ currentDateText }}
+          </span>
+          <v-select
+            v-model="calendarView"
+            label="模式"
+            :items="[
+              { title: '月', value: 'month' },
+              { title: '週', value: 'week' },
+              { title: '日', value: 'day' },
+            ]"
+            item-title="title"
+            item-value="value"
+            variant="underlined"
+            hide-details
+            style="max-width: 120px; margin-top: 0.1rem"
+            class="ml-4"
+          ></v-select>
+        </v-col>
+
+        <v-col cols="12" md="auto" class="d-flex align-center pt-0">
+          <v-btn-group>
+            <v-btn
+              @click="currentDateText = goPrev(cal)"
+              prepend-icon="mdi-chevron-left"
+              >Prev</v-btn
+            >
+            <v-btn @click="currentDateText = goToday(cal)">Today</v-btn>
+            <v-btn
+              @click="currentDateText = goNext(cal)"
+              append-icon="mdi-chevron-right"
+              >Next</v-btn
+            >
+          </v-btn-group>
+        </v-col>
+      </v-row>
+    </v-container>
 
     <!-- 日曆 -->
     <div ref="calendar" style="height: 800px"></div>
@@ -195,6 +245,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import Calendar from '@toast-ui/calendar';
+import { useDisplay } from 'vuetify';
 import {
   updateCurrentDate,
   goPrev,
@@ -204,6 +255,9 @@ import {
 import useCalendarConfig from '@/composables/MyCalendar/useCalendarConfig';
 import useCalendarButtonFunction from '@/composables/MyCalendar/useCalendarButtonFunction';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
+
+//* 排版用處
+const { sm, md, lg, xl } = useDisplay();
 
 const calendar = ref(null);
 const dayCalendar = ref(null);
@@ -226,11 +280,8 @@ const {
   setCalendarsInstances,
   resetEventForm,
 } = useCalendarConfig();
-const { submitEvent, deleteEvent, updateEvent, compeleteEvent } = useCalendarButtonFunction(
-  eventForm,
-  dialog,
-);
-
+const { submitEvent, deleteEvent, updateEvent, compeleteEvent } =
+  useCalendarButtonFunction(eventForm, dialog);
 
 //todo 把button的動作做出來並放到獨立的檔案裡
 

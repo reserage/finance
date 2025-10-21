@@ -279,7 +279,7 @@ async function deleteCity(cityId) {
   try {
     if (
       window.confirm(
-        `確定要刪除 ${city.value.CountryName} - ${city.value.name} 嗎？`
+        `確定要刪除 ${city.value.country} - ${city.value.name} 嗎？`
       )
     ) {
       const response = await axios.delete(
