@@ -95,7 +95,7 @@
                   <v-chip text-color="white" size="small">
                     {{ timeDiff }}
                   </v-chip>
-                </template>
+                  </template>
               </v-list-item>
 
               <v-list-item class="pl-0 pr-0 mb-4">
@@ -133,6 +133,7 @@ import {
   defineProps,
   defineEmits,
   watch,
+  inject,
 } from 'vue';
 
 const emit = defineEmits(['city-deleted']);
@@ -150,18 +151,17 @@ let expand = ref(false);
 const cardRef = ref(null);
 const expandContentStyle = ref({});
 
-const isTeleport = ref(true); // 總是使用 Teleport
+const isTeleport = ref(true);
 
 const updateExpandContentPosition = () => {
   if (cardRef.value && expand.value) {
     const rect = cardRef.value.$el.getBoundingClientRect();
-    const expandHeight = 200; // 你估算的展開內容高度
+    const expandHeight = 200;
     let top = rect.bottom;
 
     const fullHeight = document.documentElement.scrollHeight;
     const bottomRelativeToPage = rect.bottom + window.scrollY;
 
-    // 如果超過視窗高度，改向上展開
     if (bottomRelativeToPage + expandHeight > fullHeight) {
       isTeleport.value = false;
       return;
@@ -192,7 +192,6 @@ watch(expand, (newVal) => {
   isTeleport.value = true;
 });
 
-// 監聽展開狀態和窗口大小
 onMounted(() => {
   window.addEventListener('resize', updateExpandContentPosition);
   window.addEventListener('scroll', updateExpandContentPosition);
@@ -203,32 +202,27 @@ onUnmounted(() => {
   window.removeEventListener('scroll', updateExpandContentPosition);
 });
 
-// 當展開時更新位置
 const originalExpand = expand;
 expand = computed({
   get: () => originalExpand.value,
   set: (val) => {
     originalExpand.value = val;
     if (val) {
-      // 下一幀更新位置
       requestAnimationFrame(updateExpandContentPosition);
     }
   },
 });
 
-// city = {
-//     name: 'Taipei',
-//     country: 'Taiwan',
-//     timezoneOffset: 8,
-// }
-
 //* ------------ 時間與日期更新邏輯 ------------ *//
+//* 注入全局時間同步器
+const globalTimeSync = inject('globalTimeSync', ref(0));
+
 function updateTime() {
   const localTime = new Date();
   const optionsTime = {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit', // ✅ 顯示秒數
+    second: '2-digit',
     hour12: false,
     timeZone: city.value.timezone,
   };
@@ -244,9 +238,15 @@ function updateTime() {
   city.value.localTime = localTime.toLocaleTimeString('zh-TW', optionsTime);
   city.value.date = localTime.toLocaleDateString('zh-TW', optionsDate);
 }
+
+// 監聽全局時間同步器，每秒統一更新
+watch(globalTimeSync, () => {
+  updateTime();
+});
+
+// 組件掛載時立即更新一次
 onMounted(() => {
   updateTime();
-  setInterval(updateTime, 1000);
 });
 
 //* ------------ 計算與台北的時差 ------------ *//
@@ -257,9 +257,7 @@ onMounted(() => {
 
 function getTimeDiffString(cityTimeZone) {
   const now = new Date();
-  // 台灣時間
   const taiwanTime = now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' });
-  // 城市時間
   const cityTime = now.toLocaleString('en-US', { timeZone: cityTimeZone });
 
   const taiwanDate = new Date(taiwanTime);
@@ -274,7 +272,6 @@ function getTimeDiffString(cityTimeZone) {
 }
 
 //* ------------ 刪除城市邏輯 ------------ */
-
 async function deleteCity(cityId) {
   try {
     if (
