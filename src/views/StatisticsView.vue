@@ -110,12 +110,16 @@
         </div>
 
         <!-- 預算對比區塊 -->
-          <!-- 預算對比區塊 -->
+        <!-- 預算對比區塊 -->
         <div class="col-12 mb-4">
           <div class="card bg-light p-3">
             <h2 class="card-title">預算對比</h2>
             <div class="card-body">
-              <div class="barChartContainer" style="height: 400px" v-if="hasBudget">
+              <div
+                class="barChartContainer"
+                style="height: 400px"
+                v-if="hasBudget"
+              >
                 <PieChart
                   :chart-data="barData"
                   :chart-options="barOptions"
@@ -123,9 +127,7 @@
                 />
               </div>
               <div v-if="!hasBudget">
-                <h4 class="text-center">
-                  尚未設定預算
-                </h4>
+                <h4 class="text-center">尚未設定預算</h4>
               </div>
             </div>
           </div>
@@ -151,10 +153,21 @@ const pieData = computed(() => ({
       label: '支出',
       data: pieMoney.value,
       backgroundColor: [
-        'rgb(255, 99, 132)',
-        'rgb(54, 162, 235)',
-        'rgb(255, 205, 86)',
-        'rgb(75, 192, 192)',
+        'rgb(255, 99, 132)', // 紅
+        'rgb(54, 162, 235)', // 藍
+        'rgb(255, 205, 86)', // 黃
+        'rgb(75, 192, 192)', // 綠
+        'rgb(153, 102, 255)', // 紫
+        'rgb(255, 159, 64)', // 橙
+        'rgb(201, 203, 207)', // 灰
+        'rgb(255, 99, 255)', // 粉紫
+        'rgb(0, 204, 153)', // 青綠
+        'rgb(255, 204, 153)', // 淺橙
+        'rgb(102, 204, 255)', // 淺藍
+        'rgb(255, 102, 102)', // 淺紅
+        'rgb(178, 255, 102)', // 淺綠
+        'rgb(204, 153, 255)', // 淺紫
+        'rgb(255, 255, 153)', // 淺黃
       ],
     },
   ],
