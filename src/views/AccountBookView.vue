@@ -1,10 +1,17 @@
 <template>
   <!-- 選擇選分下拉選單 -->
-  <v-autocomplete
-    v-model="year"
-    :items="years"
-    label="選擇年份"
-  ></v-autocomplete>
+  <v-row
+    ><v-col cols="12" sm="11"
+      ><v-autocomplete
+        v-model="year"
+        :items="years"
+        label="選擇年份"
+      ></v-autocomplete>
+    </v-col>
+    <v-col cols="12" sm="1"
+      ><v-btn variant="tonal" @click="bindLine">綁定Line</v-btn></v-col
+    >
+  </v-row>
 
   <!-- 所有記帳本 -->
   <v-row>
@@ -294,6 +301,25 @@ const editngBookKeeping = async () => {
     });
 };
 
+const bindLine = async () => {
+  try {
+    const response = await axios.post(
+      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/line/bind/code`,
+      {},
+      { withCredentials: true }
+    );
+    
+    console.log(response.data)
+
+  } catch (error) {
+    console.log('error',error);
+    if (error.response.data.error.statusCode == 400) {
+      alert(error.response.data.message);
+      return;
+    }
+  }
+};
+
 const currentEditingBook = ref(null);
 
 // todo: 處理點擊編輯按鈕的動作
@@ -363,7 +389,7 @@ onMounted(async () => {
   const response = await axios.get(
     `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/exchangeRate/TWD`
   );
-  console.log('response',response);
+  console.log('response', response);
 });
 </script>
 
