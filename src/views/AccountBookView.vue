@@ -9,7 +9,8 @@
       ></v-autocomplete>
     </v-col>
     <v-col cols="12" sm="1"
-      ><v-btn variant="tonal" @click="bindLine">綁定Line</v-btn></v-col
+      ><v-btn variant="tonal" @click="bindLine">綁定Line</v-btn>
+      <span>{{ lineBindCode }}</span></v-col
     >
   </v-row>
 
@@ -188,6 +189,8 @@ const addingAndEditingDialogIsOpen = ref(false);
 const formRef = ref(null);
 const formIsValid = ref(false);
 
+const lineBindCode = ref('')
+
 const form = ref({
   name: '',
   description: '',
@@ -301,6 +304,8 @@ const editngBookKeeping = async () => {
     });
 };
 
+
+
 const bindLine = async () => {
   try {
     const response = await axios.post(
@@ -308,12 +313,15 @@ const bindLine = async () => {
       {},
       { withCredentials: true }
     );
-    
-    console.log(response.data)
 
+    console.log(response.data);
+    lineBindCode.value = ref(response.data.data.bindCode);
   } catch (error) {
-    console.log('error',error);
-    if (error.response.data.error.statusCode == 400) {
+    console.log('error', error);
+    if (
+      error.response.data.error.statusCode == 400 ||
+      error.response.data.error.statusCode == 404
+    ) {
       alert(error.response.data.message);
       return;
     }
