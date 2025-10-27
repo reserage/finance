@@ -1,14 +1,14 @@
 <template>
   <!-- 選擇選分下拉選單 -->
   <v-row
-    ><v-col cols="12" sm="11"
+    ><v-col cols="9" sm="11" class="pt-0"
       ><v-autocomplete
         v-model="year"
         :items="years"
         label="選擇年份"
       ></v-autocomplete>
     </v-col>
-    <v-col cols="12" sm="1"
+    <v-col cols="3" sm="1"
       ><v-btn variant="tonal" @click="bindLine">綁定Line</v-btn>
       <span>{{ lineBindCode }}</span></v-col
     >
@@ -189,7 +189,7 @@ const addingAndEditingDialogIsOpen = ref(false);
 const formRef = ref(null);
 const formIsValid = ref(false);
 
-const lineBindCode = ref('')
+const lineBindCode = ref('');
 
 const form = ref({
   name: '',
@@ -303,8 +303,6 @@ const editngBookKeeping = async () => {
       console.error('修改失敗:', error);
     });
 };
-
-
 
 const bindLine = async () => {
   try {
