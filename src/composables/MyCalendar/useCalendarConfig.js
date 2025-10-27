@@ -73,7 +73,7 @@ export default function useCalendar() {
       name: '工作',
       backgroundColor: '#00a9ff',
     },
-    { id: '3', name: '國慶假日', color: '#ffffff', backgroundColor: '#d32f2f' },
+    { id: '3', name: '國定假日', color: '#ffffff', backgroundColor: '#d32f2f' },
   ];
 
   function formatDateForInput(date, isAllDay) {
