@@ -1,117 +1,143 @@
 <template>
   <!-- 選擇選分下拉選單 -->
-  <v-row
-    ><v-col cols="9" sm="11" class="pt-0"
-      ><v-autocomplete
-        v-model="year"
-        :items="years"
-        label="選擇年份"
-      ></v-autocomplete>
-    </v-col>
-    <v-col cols="3" sm="1"
-      ><v-btn variant="tonal" @click="bindLine">綁定Line</v-btn>
-      <span>{{ lineBindCode }}</span></v-col
-    >
-  </v-row>
-
-  <!-- 所有記帳本 -->
-  <v-row>
-    <v-col
-      class=""
-      cols="12"
-      sm="6"
-      md="4"
-      v-for="(card, index) in bookInfo"
-      :key="index"
-    >
-      <v-card
-        class="responsive-card position-relative"
-        ripple
-        @click="handleClick(card._id)"
-      >
-        <v-card-title class="fs-2">
-          <v-icon class="mr-2" color="primary">mdi-book</v-icon
-          >{{ card.name }}</v-card-title
+  <div>
+    <v-row
+      ><v-col cols="9" sm="11" class="pt-0"
+        ><v-autocomplete
+          v-model="year"
+          :items="years"
+          label="選擇年份"
+        ></v-autocomplete>
+      </v-col>
+      <v-col cols="3" sm="1"
+        ><v-btn variant="tonal" @click="isOpenBindLineDialog = true"
+          >綁定Line</v-btn
         >
-        <v-card-text class="fs-6">
-          {{ card.description }}
-        </v-card-text>
-        <v-card-actions class="d-flex justify-end">
-          <!-- // todo: click的事件還沒做 -->
-          <v-btn
-            class="position-absolute top-0 end-0"
-            icon
-            @click.stop="openEditDialog(card)"
-          >
-            <v-icon color="primary">mdi-pencil</v-icon>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+      </v-col>
+    </v-row>
 
-  <!-- 修改或新增記帳本按鈕 -->
-  <v-row
-    ><v-col cols="12" class="d-flex justify-center"
-      ><v-btn
-        prepend-icon="mdi-plus"
-        class="w-75"
-        size="large"
-        @click="openAddingDialog"
+    <!-- 所有記帳本 -->
+    <v-row>
+      <v-col
+        class=""
+        cols="12"
+        sm="6"
+        md="4"
+        v-for="(card, index) in bookInfo"
+        :key="index"
       >
-        新增記帳本
-      </v-btn></v-col
-    ></v-row
-  >
-
-  <v-dialog
-    v-model="addingAndEditingDialogIsOpen"
-    max-height="80%"
-    width="600px"
-  >
-    <v-card :title="dialogConfig[currentDialogMode].title">
-      <v-card-text>
-        <v-form v-model="formIsValid" ref="formRef">
-          <v-text-field
-            class="mb-2"
-            v-model="form.name"
-            label="記帳本名稱"
-            :rules="rules.vTextField"
-            required
-          ></v-text-field>
-          <v-textarea
-            v-model="form.description"
-            label="記帳本描述"
-            :rules="rules.vTextarea"
-            rows="3"
-          ></v-textarea>
-          <v-card-actions>
-            <!--//desc v-spacer的作用是將按鈕推到右側 ， v-spacer會佔據剩餘空間 -->
-            <v-spacer></v-spacer
-            ><v-btn
-              color="red"
-              variant="elevated"
-              @click.stop="closeAddingAndEditingDialog()"
-              >取消</v-btn
-            >
+        <v-card
+          class="responsive-card position-relative"
+          ripple
+          @click="handleClick(card._id)"
+        >
+          <v-card-title class="fs-2">
+            <v-icon class="mr-2" color="primary">mdi-book</v-icon
+            >{{ card.name }}</v-card-title
+          >
+          <v-card-text class="fs-6">
+            {{ card.description }}
+          </v-card-text>
+          <v-card-actions class="d-flex justify-end">
+            <!-- // todo: click的事件還沒做 -->
             <v-btn
-              color="primary"
-              variant="elevated"
-              @click.stop="dialogConfig[currentDialogMode].buttonAction()"
-              >{{ dialogConfig[currentDialogMode].buttonText }}</v-btn
-            ></v-card-actions
-          >
-        </v-form>
-        <v-btn
-          color="red"
-          variant="outlined"
-          v-if="currentDialogMode === 'editing'"
-          @click.stop="removeBookKeeping"
-          >刪除記帳本</v-btn
+              class="position-absolute top-0 end-0"
+              icon
+              @click.stop="openEditDialog(card)"
+            >
+              <v-icon color="primary">mdi-pencil</v-icon>
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- 修改或新增記帳本按鈕 -->
+    <v-row
+      ><v-col cols="12" class="d-flex justify-center"
+        ><v-btn
+          prepend-icon="mdi-plus"
+          class="w-75"
+          size="large"
+          @click="openAddingDialog"
         >
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+          新增記帳本
+        </v-btn></v-col
+      ></v-row
+    >
+
+    <v-dialog
+      v-model="addingAndEditingDialogIsOpen"
+      max-height="80%"
+      width="600px"
+    >
+      <v-card :title="dialogConfig[currentDialogMode].title">
+        <v-card-text>
+          <v-form v-model="formIsValid" ref="formRef">
+            <v-text-field
+              class="mb-2"
+              v-model="form.name"
+              label="記帳本名稱"
+              :rules="rules.vTextField"
+              required
+            ></v-text-field>
+            <v-textarea
+              v-model="form.description"
+              label="記帳本描述"
+              :rules="rules.vTextarea"
+              rows="3"
+            ></v-textarea>
+            <v-card-actions>
+              <!--//desc v-spacer的作用是將按鈕推到右側 ， v-spacer會佔據剩餘空間 -->
+              <v-spacer></v-spacer
+              ><v-btn
+                color="red"
+                variant="elevated"
+                @click.stop="closeAddingAndEditingDialog()"
+                >取消</v-btn
+              >
+              <v-btn
+                color="primary"
+                variant="elevated"
+                @click.stop="dialogConfig[currentDialogMode].buttonAction()"
+                >{{ dialogConfig[currentDialogMode].buttonText }}</v-btn
+              ></v-card-actions
+            >
+          </v-form>
+          <v-btn
+            color="red"
+            variant="outlined"
+            v-if="currentDialogMode === 'editing'"
+            @click.stop="removeBookKeeping"
+            >刪除記帳本</v-btn
+          >
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isOpenBindLineDialog" max-height="80%" width="300px">
+      <v-card :title="綁定line">
+        <v-card-text
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+          "
+        >
+          <v-btn variant="tonal" @click="bindLine">獲得綁定碼</v-btn>
+          <span v-if="showLineCode"
+            >在line上輸入 "綁定 {{ lineBindCode }}"</span
+          >
+          <img
+            :src="require('@/assets/smallLineQRcode.png')"
+            alt="lineQRcode"
+            style="display: block"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 <script setup>
 import router from '@/router';
@@ -169,7 +195,6 @@ const bookInfo = ref([
     description: '這是一個範例視圖，您可以在此處添加任何內容。',
   },
 ]);
-console.log(bookInfo.value);
 
 // 真正的年份數據應該從後端獲取，這裡僅作為範例
 const years = ['2020', '2021', '2022', '2023', '2024', '2025'];
@@ -185,10 +210,12 @@ function handleClick(bookId) {
 
 // info: 新增 和 修改 記帳本的對話框 -------------------
 const addingAndEditingDialogIsOpen = ref(false);
+const isOpenBindLineDialog = ref(false);
 
 const formRef = ref(null);
 const formIsValid = ref(false);
 
+const showLineCode = ref(false);
 const lineBindCode = ref('');
 
 const form = ref({
@@ -314,6 +341,7 @@ const bindLine = async () => {
 
     console.log(response.data);
     lineBindCode.value = ref(response.data.data.bindCode);
+    showLineCode.value = true;
   } catch (error) {
     console.log('error', error);
     if (
