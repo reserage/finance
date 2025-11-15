@@ -20,12 +20,12 @@
             <div class="d-flex justify-content-evenly">
               <div class="expendtiure">
                 <h2>本月收入</h2>
-                <h3>{{ currentMonthIncome }}</h3>
+                <h3>{{ Number((currentMonthIncome || 0).toFixed(2)) }}</h3>
               </div>
               <div class="line border"></div>
               <div class="income">
                 <h2>本月支出</h2>
-                <h3>{{ currentMonthExpenditure }}</h3>
+                <h3>{{ Number((currentMonthExpenditure || 0).toFixed(2)) }}</h3>
               </div>
             </div>
           </div>

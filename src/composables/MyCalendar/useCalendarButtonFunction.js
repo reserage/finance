@@ -37,12 +37,13 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
     console.log('newEvent: ', newEvent);
 
     if (
-      newEvent.title === '' ||
-      newEvent.start === '' ||
-      newEvent.end === '' ||
-      newEvent.calendarId === null
+      newEvent[0].title === '' ||
+      newEvent[0].start === '' ||
+      newEvent[0].end === '' ||
+      newEvent[0].calendarId === null
     ) {
       window.alert('請填寫所有必填欄位');
+      return;
     }
 
     calInstance.createEvents(newEvent);
