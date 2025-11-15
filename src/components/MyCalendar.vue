@@ -82,7 +82,6 @@
         label="模式"
         :items="[
           { title: '月', value: 'month' },
-          { title: '週', value: 'week' },
           { title: '日', value: 'day' },
         ]"
         item-title="title"
@@ -397,6 +396,7 @@ onMounted(() => {
 });
 
 watch(calendarView, (newValue) => {
+  console.log('切換到檢視模式:', newValue);
   cal.changeView(newValue);
 });
 
