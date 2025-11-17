@@ -137,6 +137,10 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <v-overlay :model-value="loading" opacity="0.6">
+      <v-progress-circular indeterminate size="64" color="primary" />
+    </v-overlay>
   </div>
 </template>
 <script setup>
@@ -144,6 +148,8 @@ import router from '@/router';
 import { useTransactionStore } from '@/stores/useTransactionStore';
 import axios from 'axios';
 import { nextTick, onMounted, ref, watch } from 'vue';
+import { useLoading } from '@/composables/useLoading';
+const { loading, wrap } = useLoading();
 
 const bookInfo = ref([
   {
@@ -390,24 +396,26 @@ const closeAddingAndEditingDialog = () => {
 
 // info: 組件載入時的動作 ----------------------
 async function getBook() {
-  try {
-    const response = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/bookKeeping/getbookKeepings`,
-      {
-        params: { year: year.value },
-        withCredentials: true,
-      }
-    );
-    console.log('response.data', response.data);
+  await wrap(async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/bookKeeping/getbookKeepings`,
+        {
+          params: { year: year.value },
+          withCredentials: true,
+        }
+      );
+      console.log('response.data', response.data);
 
-    bookInfo.value = response.data.gotBookKeeping;
-    console.log('更新後的bookInfo: ', bookInfo.value);
-  } catch (e) {
-    if (e.status == 401) {
-      alert(e.response.data.message);
-      router.push('/auth/login');
+      bookInfo.value = response.data.gotBookKeeping;
+      console.log('更新後的bookInfo: ', bookInfo.value);
+    } catch (e) {
+      if (e.status == 401) {
+        alert(e.response.data.message);
+        router.push('/auth/login');
+      }
     }
-  }
+  });
 }
 onMounted(() => {
   getBook();
