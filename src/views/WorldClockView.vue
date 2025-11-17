@@ -96,12 +96,18 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-overlay :model-value="loading" opacity="0.6">
+      <v-progress-circular indeterminate size="64" color="primary" />
+    </v-overlay>
   </div>
 </template>
 <script setup>
 import CountryCard from '@/components/CountryCard.vue';
 import axios from 'axios';
 import { ref, onMounted, onUnmounted, provide, reactive } from 'vue';
+import { useLoading } from '@/composables/useLoading';
+
+const { loading, wrap } = useLoading();
 
 //* 基本設定
 const cities = ref([]); //* 在template使用的( 只有isVisible: true 的 )
@@ -176,23 +182,24 @@ const handleSubmit = async () => {
   if (!result.valid) return;
 
   console.log('✅ 送出資料：', city);
-  try {
-    await axios.post(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock`,
-      city,
-      { withCredentials: true }
-    );
-  } catch (error) {
-    console.log(error);
-  }
+  await wrap(async () => {
+    try {
+      await axios.post(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock`,
+        city,
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.log(error);
+    }
 
-  customClock.value = false;
-  try {
-    await refreshWorldClock();
-  } catch (error) {
-    console.error(`新增後刷新出現問題  ${error}`);
-  }
-
+    customClock.value = false;
+    try {
+      await refreshWorldClock();
+    } catch (error) {
+      console.error(`新增後刷新出現問題  ${error}`);
+    }
+  });
   // 這裡可發送 API，例如 axios.post('/api/v1/worldClock', city)
 };
 
@@ -224,11 +231,13 @@ provide('globalTimeSync', globalTimeSync);
 //* ------------ 獲得世界時鐘資料 ------------ *//
 // let exchangeRates = ref(0);
 onMounted(async () => {
-  try {
-    await refreshWorldClock();
-  } catch (error) {
-    console.error('Error fetching world clock data:', error);
-  }
+  await wrap(async () => {
+    try {
+      await refreshWorldClock();
+    } catch (error) {
+      console.error('Error fetching world clock data:', error);
+    }
+  });
 });
 
 function handleCityDeleted(deletedCityId) {
@@ -247,15 +256,17 @@ function handleCityDeleted(deletedCityId) {
 }
 
 async function toggleVisibility(city) {
-  try {
-    await axios.patch(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock/${city._id}`,
-      { isVisible: city.isVisible },
-      { withCredentials: true }
-    );
-  } catch (error) {
-    console.log(error);
-  }
+  await wrap(async () => {
+    try {
+      await axios.patch(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock/${city._id}`,
+        { isVisible: city.isVisible },
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
   if (city.isVisible) {
     cities.value.push(city);
@@ -266,32 +277,36 @@ async function toggleVisibility(city) {
 }
 
 async function getWorldColck() {
-  try {
-    const worldClockResponse = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock`,
-      {
-        withCredentials: true,
-      }
-    );
-    return worldClockResponse.data.data.cities;
-  } catch (error) {
-    console.error(`抓取時鐘時出現問題  ${error}`);
-    throw error;
-  }
+  return await wrap(async () => {
+    try {
+      const worldClockResponse = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock`,
+        {
+          withCredentials: true,
+        }
+      );
+      return worldClockResponse.data.data.cities;
+    } catch (error) {
+      console.error(`抓取時鐘時出現問題  ${error}`);
+      throw error;
+    }
+  });
 }
 
 async function getExchangeRate() {
-  try {
-    const exchangeRateResponse = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/exchangeRate/TWD`,
-      { withCredentials: true }
-    );
+  return await wrap(async () => {
+    try {
+      const exchangeRateResponse = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/exchangeRate/TWD`,
+        { withCredentials: true }
+      );
 
-    return exchangeRateResponse.data.data.rates;
-  } catch (error) {
-    console.error(`抓取匯率時出現問題  ${error}`);
-    throw error;
-  }
+      return exchangeRateResponse.data.data.rates;
+    } catch (error) {
+      console.error(`抓取匯率時出現問題  ${error}`);
+      throw error;
+    }
+  });
 }
 
 async function handleTimezoneOffsetAndExchangeRate(citiesData, rates) {

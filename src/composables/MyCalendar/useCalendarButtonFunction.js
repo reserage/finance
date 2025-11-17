@@ -1,8 +1,8 @@
 import axios from 'axios';
-import useCalendarConfig from './useCalendarConfig';
+import useCalendar from './useCalendarConfig';
 import api from '@/utils/api.js';
 
-export default function useCalendarButtonFunction(eventForm, dialog) {
+export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
   //* 因為line通知原故不能這樣做-------------------------------
   //! 行事曆事件的前端處理邏輯：
   //! 前端在建立新事件時，事件的 id 會先使用時間戳記產生字串。
@@ -14,118 +14,127 @@ export default function useCalendarButtonFunction(eventForm, dialog) {
   //! 每次呼叫 create Event API 時都刷新一次畫面
 
   async function submitEvent() {
-    const calendarConfig = useCalendarConfig();
-    const { calInstance, dayCalInstance } =
-      calendarConfig.getCalendarInstances();
-
-    // const instances = useCalendarConfig().getCalendarInstances();
-    // calInstance = instances.calInstance;
-    // dayCalInstance = instances.dayCalInstance;
-
-    const newEvent = [
-      {
-        id: String(Date.now()),
-        calendarId: eventForm.value.calendarId,
-        title: eventForm.value.title,
-        start: eventForm.value.start,
-        end: eventForm.value.end, // 結束時間等於開始時間
-        isAllday: eventForm.value.isAllday,
-        category: eventForm.value.isAllday ? 'allday' : 'time',
-      },
-    ];
-
-    console.log('newEvent: ', newEvent);
+  await wrap(async () => {
 
     if (
-      newEvent[0].title === '' ||
-      newEvent[0].start === '' ||
-      newEvent[0].end === '' ||
-      newEvent[0].calendarId === null
+      !eventForm.value.title ||
+      !eventForm.value.start ||
+      !eventForm.value.end ||
+      eventForm.value.calendarId === null
     ) {
       window.alert('請填寫所有必填欄位');
       return;
     }
 
-    calInstance.createEvents(newEvent);
-    dayCalInstance.createEvents(newEvent);
-
     try {
-      await api.post(
+      // 先送到後端，得到真正的 _id
+      const res = await api.post(
         `/calendar`,
         {
-          title: newEvent[0].title,
-          calendarId: newEvent[0].calendarId,
-          start: new Date(newEvent[0].start).toISOString(),
-          end: new Date(newEvent[0].end).toISOString(),
-          isAllday: newEvent[0].isAllday,
-          category: newEvent[0].category,
+          title: eventForm.value.title,
+          calendarId: eventForm.value.calendarId,
+          start: new Date(eventForm.value.start).toISOString(),
+          end: new Date(eventForm.value.end).toISOString(),
+          isAllday: eventForm.value.isAllday,
+          category: eventForm.value.isAllday ? 'allday' : 'time',
         },
         { withCredentials: true }
       );
+
+      const created = res.data.data.event;
+
+      // 用後端回傳的 _id 新增事件（不再使用 timestamp）
+      const trueEvent = {
+        id: created._id,            // ← 真正的ID！
+        calendarId: created.calendarId,
+        title: created.title,
+        start: created.start,
+        end: created.end,
+        isAllday: created.isAllday,
+        category: created.category,
+        backgroundColor: created.isDone ? '#E0E0E0' : undefined,
+      };
+
+      const { calInstance, dayCalInstance } =
+        useCalendar().getCalendarInstances();
+
+      // 直接放到前端日曆（用真ID）
+      calInstance.createEvents([trueEvent]);
+      dayCalInstance.createEvents([trueEvent]);
+
       dialog.value = false;
-      await calendarConfig.refreshCalendarEvents();
+
     } catch (error) {
-      // 這裡錯誤已經被攔截器處理過了，所以通常不用再彈窗
       console.warn('submitEvent 捕捉到錯誤:', error.message);
     }
-  }
+  });
+}
 
   async function deleteEvent() {
-    const { calInstance, dayCalInstance } =
-      useCalendarConfig().getCalendarInstances();
+    wrap(async () => {
+      const { calInstance, dayCalInstance } =
+        useCalendar().getCalendarInstances();
 
-    await axios.delete(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${eventForm.value.id}`,
-      {
-        withCredentials: true,
-      }
-    );
+      await axios.delete(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${eventForm.value.id}`,
+        {
+          withCredentials: true,
+        }
+      );
 
-    calInstance.deleteEvent(eventForm.value.id, eventForm.value.calendarId);
-    dayCalInstance.deleteEvent(eventForm.value.id, eventForm.value.calendarId);
+      calInstance.deleteEvent(eventForm.value.id, eventForm.value.calendarId);
+      dayCalInstance.deleteEvent(
+        eventForm.value.id,
+        eventForm.value.calendarId
+      );
 
-    dialog.value = false;
+      dialog.value = false;
+    });
   }
 
   async function updateEvent(id, data) {
-    const { calInstance, dayCalInstance } =
-      useCalendarConfig().getCalendarInstances();
+    wrap(async () => {
+      const { calInstance, dayCalInstance } =
+        useCalendar().getCalendarInstances();
 
-    await axios.patch(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
-      { ...data },
-      { withCredentials: true }
-    );
+      await axios.patch(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
+        { ...data },
+        { withCredentials: true }
+      );
 
-    calInstance.updateEvent(data.id, data.calendarId, data);
+      calInstance.updateEvent(data.id, data.calendarId, data);
 
-    dayCalInstance.updateEvent(data.id, data.calendarId, data);
+      dayCalInstance.updateEvent(data.id, data.calendarId, data);
 
-    dialog.value = false;
+      dialog.value = false;
+    });
   }
 
   async function compeleteEvent(id, data) {
-    const { calInstance, dayCalInstance } =
-      useCalendarConfig().getCalendarInstances();
+    wrap(async () => {
+      const { calInstance, dayCalInstance } =
+        useCalendar().getCalendarInstances();
 
-    await axios.patch(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
-      { isDone: true },
-      { withCredentials: true }
-    );
+      await axios.patch(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
+        { isDone: true },
+        { withCredentials: true }
+      );
 
-    console.log(calInstance, dayCalInstance);
-    console.log('data', data);
+      console.log(calInstance, dayCalInstance);
+      console.log('data', data);
 
-    calInstance.updateEvent(data.id, data.calendarId, {
-      backgroundColor: '#E0E0E0',
+      calInstance.updateEvent(data.id, data.calendarId, {
+        backgroundColor: '#E0E0E0',
+      });
+
+      dayCalInstance.updateEvent(data.id, data.calendarId, {
+        backgroundColor: '#E0E0E0',
+      });
+
+      dialog.value = false;
     });
-
-    dayCalInstance.updateEvent(data.id, data.calendarId, {
-      backgroundColor: '#E0E0E0',
-    });
-
-    dialog.value = false;
   }
 
   return { submitEvent, deleteEvent, updateEvent, compeleteEvent };

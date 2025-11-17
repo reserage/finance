@@ -95,7 +95,7 @@
                   <v-chip text-color="white" size="small">
                     {{ timeDiff }}
                   </v-chip>
-                  </template>
+                </template>
               </v-list-item>
 
               <v-list-item class="pl-0 pr-0 mb-4">
@@ -120,6 +120,9 @@
         </v-expand-transition>
       </v-card-item>
     </v-card>
+    <v-overlay :model-value="loading" opacity="0.6">
+      <v-progress-circular indeterminate size="64" color="primary" />
+    </v-overlay>
   </div>
 </template>
 
@@ -135,6 +138,9 @@ import {
   watch,
   inject,
 } from 'vue';
+import { useLoading } from '@/composables/useLoading';
+
+const { loading, wrap } = useLoading();
 
 const emit = defineEmits(['city-deleted']);
 
@@ -279,19 +285,21 @@ async function deleteCity(cityId) {
         `確定要刪除 ${city.value.country} - ${city.value.name} 嗎？`
       )
     ) {
-      const response = await axios.delete(
-        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock/${cityId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await wrap(async () => {
+        const response = await axios.delete(
+          `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/worldClock/${cityId}`,
+          {
+            withCredentials: true,
+          }
+        );
 
-      console.log('使用者確認刪除城市');
-      if (response.status === 204) {
-        emit('city-deleted', cityId);
-      } else {
-        window.alert('刪除城市失敗，請稍後再試。');
-      }
+        console.log('使用者確認刪除城市');
+        if (response.status === 204) {
+          emit('city-deleted', cityId);
+        } else {
+          window.alert('刪除城市失敗，請稍後再試。');
+        }
+      });
     }
   } catch (error) {
     if (error.response && error.response.status === 404) {

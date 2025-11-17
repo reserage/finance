@@ -5,7 +5,7 @@ let calInstance = null;
 let dayCalInstance = null;
 
 //! event的 id 屬性是來自 DB 的 _id
-export default function useCalendar() {
+export default function useCalendar(wrap) {
   //! calendarId 這個屬性是指 事件的分類(私人、工作...)
   const eventForm = ref({
     id: null, // 簡單用 timestamp 當 id
@@ -118,59 +118,64 @@ export default function useCalendar() {
   }
 
   async function refreshCalendarEvents() {
-    const response = await api.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
-      { withCredentials: true }
-    );
+    return await wrap(async () => {
+      console.log('刷新行事曆事件56555555555555555');
+      const response = await api.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar`,
+        { withCredentials: true }
+      );
 
-    const events = response.data.data.events.map((event) => {
-      let bgColor;
-      if (event.isDone) {
-        bgColor = '#E0E0E0';
-      }
+      const events = response.data.data.events.map((event) => {
+        let bgColor;
+        if (event.isDone) {
+          bgColor = '#E0E0E0';
+        }
 
-      return { id: event._id, ...event, backgroundColor: bgColor };
+        return { id: event._id, ...event, backgroundColor: bgColor };
+      });
+
+      const publicHolidayEvents = await getPublicHoliday();
+      console.log('publicHolidayEvents   ', publicHolidayEvents);
+
+      calEvents = events;
+      calInstance.clear();
+      calInstance.createEvents([...calEvents, ...publicHolidayEvents]);
+      dayCalInstance.clear();
+      dayCalInstance.createEvents(calEvents);
+      // calInstance.render();
+      // calInstance.deleteEvent('1', 'cal1');
+      return calEvents;
     });
-
-    const publicHolidayEvents = await getPublicHoliday();
-    console.log('publicHolidayEvents   ', publicHolidayEvents);
-
-    calEvents = events;
-    calInstance.clear();
-    calInstance.createEvents([...calEvents, ...publicHolidayEvents]);
-    dayCalInstance.clear();
-    dayCalInstance.createEvents(calEvents);
-    // calInstance.render();
-    // calInstance.deleteEvent('1', 'cal1');
-    return calEvents;
   }
 
   async function getPublicHoliday() {
     //* === 自動載入台灣假期 ===
-    try {
-      const year = new Date().getFullYear();
-      const response = await fetch(
-        `https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`
-      );
-      const holidays = await response.json();
+    return await wrap(async () => {
+      try {
+        const year = new Date().getFullYear();
+        const response = await fetch(
+          `https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/${year}.json`
+        );
+        const holidays = await response.json();
 
-      const holidayEvents = holidays
-        .filter((d) => d.isHoliday === true && d.description)
-        .map((d, index) => ({
-          id: `holiday-${index}`,
-          calendarId: 'holiday',
-          title: d.description,
-          category: 'allday',
-          start: d.date,
-          end: d.date,
-          isAllday: true,
-          backgroundColor: '#d32f2f',
-        }));
+        const holidayEvents = holidays
+          .filter((d) => d.isHoliday === true && d.description)
+          .map((d, index) => ({
+            id: `holiday-${index}`,
+            calendarId: 'holiday',
+            title: d.description,
+            category: 'allday',
+            start: d.date,
+            end: d.date,
+            isAllday: true,
+            backgroundColor: '#d32f2f',
+          }));
 
-      return holidayEvents;
-    } catch (err) {
-      console.error('❌ 載入台灣假期失敗:', err);
-    }
+        return holidayEvents;
+      } catch (err) {
+        console.error('❌ 載入台灣假期失敗:', err);
+      }
+    });
   }
 
   return {

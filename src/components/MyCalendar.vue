@@ -238,6 +238,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-overlay :model-value="loading">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 
@@ -251,9 +254,12 @@ import {
   goNext,
   goToday,
 } from '@/utils/toastCalendarBaseAPI';
-import useCalendarConfig from '@/composables/MyCalendar/useCalendarConfig';
+import useCalendar from '@/composables/MyCalendar/useCalendarConfig';
 import useCalendarButtonFunction from '@/composables/MyCalendar/useCalendarButtonFunction';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
+import { useLoading } from '@/composables/useLoading';
+
+const { loading, wrap } = useLoading();
 
 //* 排版用處
 const { sm, md, lg, xl } = useDisplay();
@@ -278,9 +284,9 @@ const {
   formatDateForInput,
   setCalendarsInstances,
   resetEventForm,
-} = useCalendarConfig();
+} = useCalendar(wrap);
 const { submitEvent, deleteEvent, updateEvent, compeleteEvent } =
-  useCalendarButtonFunction(eventForm, dialog);
+  useCalendarButtonFunction(eventForm, dialog, wrap);
 
 //todo 把button的動作做出來並放到獨立的檔案裡
 

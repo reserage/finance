@@ -134,6 +134,9 @@
         </div>
       </div>
     </div>
+    <v-overlay :model-value="loading" opacity="0.6">
+      <v-progress-circular indeterminate size="64" color="primary" />
+    </v-overlay>
   </div>
 </template>
 
@@ -141,6 +144,9 @@
 import PieChart from '@/components/PieChart.vue';
 import { ref, onMounted, watch, computed } from 'vue';
 import axios from 'axios';
+import { useLoading } from '@/composables/useLoading';
+
+const { loading, wrap } = useLoading();
 
 //*  ----------------- PieChart -------------------------
 let pieLabels = ref([]);
@@ -328,80 +334,84 @@ const highSpendingCategories = ref([]);
 
 // 先從後端取得預設月份的資料
 onMounted(async () => {
-  try {
+  await wrap(async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/statistics/init`,
+        {
+          withCredentials: true,
+        }
+      );
+      optionsMonths.value = response.data.months;
+      selectedDate.value = optionsMonths.value[optionsMonths.value.length - 1]; // 預設選擇最新的月份
+
+      //* --------------- 預算對比部分 ------------------
+      hasBudget.value = response.data.allData.data.budget.length > 0;
+      if (!hasBudget.value) {
+        categories.value = [];
+        budgetLimit.value = [];
+        actualExpense.value = [];
+      } else {
+        categories.value = response.data.allData.data.budget.map(
+          (item) => item.categoryName
+        );
+        budgetLimit.value = response.data.allData.data.budget.map(
+          (item) => item.budget
+        );
+        actualExpense.value = response.data.allData.data.budget.map(
+          (item) => item.total
+        );
+      }
+
+      // 給要用到的資料賦值
+      const backendData = response.data.allData.data;
+      currentMonthIncome.value = backendData.totalIncome;
+      currentMonthExpenditure.value = backendData.totalExpense;
+      highSpendingCategories.value = backendData.sorted;
+      pieLabels.value = backendData.sorted.map((item) => item[0]);
+      pieMoney.value = backendData.sorted.map((item) => item[1]);
+
+      getAndSetLineChartData(spendingTrendRadio.value, selectedDate.value);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+});
+
+watch(selectedDate, async (newValue) => {
+  await wrap(async () => {
     const response = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/statistics/init`,
+      `${process.env.VUE_APP_BACKEND_API_URL}/statistics`,
       {
+        params: { selectedDate: newValue },
         withCredentials: true,
       }
     );
-    optionsMonths.value = response.data.months;
-    selectedDate.value = optionsMonths.value[optionsMonths.value.length - 1]; // 預設選擇最新的月份
+    console.log('後端資料:', response.data);
 
-    //* --------------- 預算對比部分 ------------------
-    hasBudget.value = response.data.allData.data.budget.length > 0;
+    const backendData = response.data.data;
+    currentMonthIncome.value = backendData.totalIncome;
+    currentMonthExpenditure.value = backendData.totalExpense;
+    highSpendingCategories.value = backendData.sorted;
+
+    hasBudget.value = response.data.data.budget.length > 0;
     if (!hasBudget.value) {
       categories.value = [];
       budgetLimit.value = [];
       actualExpense.value = [];
     } else {
-      categories.value = response.data.allData.data.budget.map(
+      categories.value = response.data.data.budget.map(
         (item) => item.categoryName
       );
-      budgetLimit.value = response.data.allData.data.budget.map(
-        (item) => item.budget
-      );
-      actualExpense.value = response.data.allData.data.budget.map(
-        (item) => item.total
-      );
+      budgetLimit.value = response.data.data.budget.map((item) => item.budget);
+      actualExpense.value = response.data.data.budget.map((item) => item.total);
     }
 
-    // 給要用到的資料賦值
-    const backendData = response.data.allData.data;
-    currentMonthIncome.value = backendData.totalIncome;
-    currentMonthExpenditure.value = backendData.totalExpense;
-    highSpendingCategories.value = backendData.sorted;
     pieLabels.value = backendData.sorted.map((item) => item[0]);
     pieMoney.value = backendData.sorted.map((item) => item[1]);
 
-    getAndSetLineChartData(spendingTrendRadio.value, selectedDate.value);
-  } catch (error) {
-    console.log(error);
-  }
-});
-
-watch(selectedDate, async (newValue) => {
-  const response = await axios.get(
-    `${process.env.VUE_APP_BACKEND_API_URL}/statistics`,
-    {
-      params: { selectedDate: newValue },
-      withCredentials: true,
-    }
-  );
-  console.log('後端資料:', response.data);
-
-  const backendData = response.data.data;
-  currentMonthIncome.value = backendData.totalIncome;
-  currentMonthExpenditure.value = backendData.totalExpense;
-  highSpendingCategories.value = backendData.sorted;
-
-  hasBudget.value = response.data.data.budget.length > 0;
-  if (!hasBudget.value) {
-    categories.value = [];
-    budgetLimit.value = [];
-    actualExpense.value = [];
-  } else {
-    categories.value = response.data.data.budget.map(
-      (item) => item.categoryName
-    );
-    budgetLimit.value = response.data.data.budget.map((item) => item.budget);
-    actualExpense.value = response.data.data.budget.map((item) => item.total);
-  }
-
-  pieLabels.value = backendData.sorted.map((item) => item[0]);
-  pieMoney.value = backendData.sorted.map((item) => item[1]);
-
-  getAndSetLineChartData(spendingTrendRadio.value, newValue);
+    getAndSetLineChartData(spendingTrendRadio.value, newValue);
+  });
 });
 
 watch(spendingTrendRadio, (newValue) => {
@@ -409,25 +419,27 @@ watch(spendingTrendRadio, (newValue) => {
 });
 
 async function getAndSetLineChartData(spendingTrendRadio, selectedDate) {
-  const lineResponse = await axios.get(
-    `${process.env.VUE_APP_BACKEND_API_URL}/statistics/line`,
-    {
-      params: {
-        selectedDate: selectedDate,
-        spendingTrendRadio: spendingTrendRadio,
-      },
-      withCredentials: true,
-    }
-  );
-  console.log('折線圖後端資料:', lineResponse.data);
+  await wrap(async () => {
+    const lineResponse = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/statistics/line`,
+      {
+        params: {
+          selectedDate: selectedDate,
+          spendingTrendRadio: spendingTrendRadio,
+        },
+        withCredentials: true,
+      }
+    );
+    console.log('折線圖後端資料:', lineResponse.data);
 
-  const lineBackendData = lineResponse.data;
-  if (spendingTrendRadio === 'month') {
-    lineLabels.value = lineBackendData.map((item) => item.week.slice(-1));
-  } else {
-    lineLabels.value = lineBackendData.map((item) => item.month.slice(-2));
-  }
-  lineMoney.value = lineBackendData.map((item) => item.totalAmount);
+    const lineBackendData = lineResponse.data;
+    if (spendingTrendRadio === 'month') {
+      lineLabels.value = lineBackendData.map((item) => item.week.slice(-1));
+    } else {
+      lineLabels.value = lineBackendData.map((item) => item.month.slice(-2));
+    }
+    lineMoney.value = lineBackendData.map((item) => item.totalAmount);
+  });
 }
 </script>
 
