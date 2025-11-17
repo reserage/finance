@@ -319,7 +319,7 @@ if (TransactionStore.selectedBook) {
   });
 } else {
   alert('請先選擇記帳本');
-  router.push('/accountBook');
+  router.push('/');
 }
 
 // 調整v-speed-dial大小
@@ -358,12 +358,10 @@ const handleAmountChangeAndCategoryChange = debounce(
     minAmountErrorMessage.value = '';
     maxAmountErrorMessage.value = '';
 
-    const isIncome =
-        selectExpenseOrIncome.value === 'income' ? true : false;
+    const isIncome = selectExpenseOrIncome.value === 'income' ? true : false;
     let filterFn;
     // 如果 min 和 max 都有值，才做比較與錯誤提示
     if (!isNaN(min) && !isNaN(max)) {
-
       if (min > max) {
         if (max === Number(oldMax)) {
           minAmountError.value = true;
@@ -382,21 +380,18 @@ const handleAmountChangeAndCategoryChange = debounce(
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else if (!isNaN(min)) {
-      
       filterFn = (record) =>
         record.amount >= min &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else if (!isNaN(max)) {
-      
       filterFn = (record) =>
         record.amount <= max &&
         (selectValue.value.length === 0 ||
           selectValue.value.includes(record.category)) &&
         isIncome === record.isIncome;
     } else {
-      
       console.log('selectExpenseOrIncome.value: ', selectExpenseOrIncome.value);
       console.log('isIncome: ', isIncome);
       filterFn = (record) =>
