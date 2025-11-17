@@ -240,7 +240,7 @@ onMounted(async () => {
   });
 });
 
-function handleCityDeleted(deletedCityId) {
+async function handleCityDeleted(deletedCityId) {
   console.log('收到刪除城市事件，ID為:', deletedCityId);
 
   console.log('已刪除城市ID:', deletedCityId);
@@ -253,6 +253,7 @@ function handleCityDeleted(deletedCityId) {
     } 已刪除`
   );
   cities.value = cities.value.filter((city) => city._id !== deletedCityId);
+  await refreshWorldClock();
 }
 
 async function toggleVisibility(city) {
