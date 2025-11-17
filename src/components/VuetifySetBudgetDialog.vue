@@ -78,6 +78,10 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-overlay :model-value="loading" opacity="0.6">
+    <v-progress-circular indeterminate size="64" color="primary" />
+  </v-overlay>
 </template>
 <script setup>
 import {
@@ -90,6 +94,8 @@ import {
 } from 'vue';
 import axios from 'axios';
 import { useTransactionStore } from '@/stores/useTransactionStore';
+import { useLoading } from '@/composables/useLoading';
+const { loading, wrap } = useLoading();
 const TransactionStore = useTransactionStore();
 
 const props = defineProps(['allCategoriesData']);
@@ -185,45 +191,48 @@ async function saveBudgetInDB() {
     isEditingBudgetDialog.value = false;
     return;
   }
-
-  try {
-    const res = await axios.post(
-      `${process.env.VUE_APP_BACKEND_API_URL}/budget/category`,
-      {
-        bookId: TransactionStore.selectedBook,
-        categoryId: currentEditingCategoryId.value,
-        amount: Number(setNewBudget.value),
-      },
-      {
-        withCredentials: true,
-      }
-    );
-    console.log('儲存預算成功', res.data);
-  } catch (e) {
-    console.error('儲存預算時發生錯誤', e);
-    return;
-  } finally {
-    await getBudgetFromBackend();
-    isEditingBudgetDialog.value = false;
-  }
+  await wrap(async () => {
+    try {
+      const res = await axios.post(
+        `${process.env.VUE_APP_BACKEND_API_URL}/budget/category`,
+        {
+          bookId: TransactionStore.selectedBook,
+          categoryId: currentEditingCategoryId.value,
+          amount: Number(setNewBudget.value),
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      console.log('儲存預算成功', res.data);
+    } catch (e) {
+      console.error('儲存預算時發生錯誤', e);
+      return;
+    } finally {
+      await getBudgetFromBackend();
+      isEditingBudgetDialog.value = false;
+    }
+  });
 }
 
 async function getBudgetFromBackend() {
-  try {
-    const res = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/budget/category`,
-      {
-        params: {
-          bookId: TransactionStore.selectedBook,
-        },
-        withCredentials: true,
-      }
-    );
-    console.log('從後端取得的預算資料', res.data);
-    backendRatioAndBudgetAndTotal.value = res.data;
-  } catch (e) {
-    console.error('從後端取得預算資料時發生錯誤', e);
-  }
+  await wrap(async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/budget/category`,
+        {
+          params: {
+            bookId: TransactionStore.selectedBook,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log('從後端取得的預算資料', res.data);
+      backendRatioAndBudgetAndTotal.value = res.data;
+    } catch (e) {
+      console.error('從後端取得預算資料時發生錯誤', e);
+    }
+  });
 }
 </script>
 

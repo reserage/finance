@@ -222,6 +222,10 @@
     :all-categories-data="allCategoriesData"
     @close="isShowSetBudgetDialog = false"
   />
+
+  <v-overlay :model-value="loading" opacity="0.6">
+    <v-progress-circular indeterminate size="64" color="primary" />
+  </v-overlay>
 </template>
 <script setup>
 import { useTransactionStore } from '@/stores/useTransactionStore';
@@ -230,9 +234,9 @@ import { computed, onMounted, ref, watch, defineAsyncComponent } from 'vue';
 import { useDisplay } from 'vuetify/lib/composables/display';
 import debounce from 'lodash/debounce';
 import { useRouter } from 'vue-router';
-// import VuetifyForm from '@/components/VuetifyAddNewAccountDialog.vue';
-// import VuetifyCategoryManagement from '@/components/VuetifyCategoryManagementDialog.vue';
-// import VuetifySetBudgetDialog from '@/components/VuetifySetBudgetDialog.vue';
+import { useLoading } from '@/composables/useLoading';
+const { loading, wrap } = useLoading();
+
 const VuetifyCategoryManagement = defineAsyncComponent(() =>
   import('@/components/VuetifyCategoryManagementDialog.vue')
 );
@@ -254,37 +258,38 @@ const isShowSetBudgetDialog = ref(false);
 
 const cleanupController = new AbortController();
 const fetchRecordsByBook = async (bookId) => {
-  const response = await axios.get(
-    `${process.env.VUE_APP_BACKEND_API_URL}/test/getRecordsByBook`,
-    {
-      params: { bookId },
-      withCredentials: true,
-      signal: cleanupController.signal,
-    }
-  );
-  // date.value裡面存放日期
+  await wrap(async () => {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/test/getRecordsByBook`,
+      {
+        params: { bookId },
+        withCredentials: true,
+        signal: cleanupController.signal,
+      }
+    );
+    // date.value裡面存放日期
 
-  records.value = response.data.records;
-  filteredRecords.value = [...records.value];
-
-  console.log('response.data: ', response.data);
-  console.log('records.value: ', records.value);
+    records.value = response.data.records;
+    filteredRecords.value = [...records.value];
+  });
 };
 
 let selectItems = ['fsfdd', 'sdfsdf', 'efd', 'dfbb', 'fsfe']; // 只存放類別名稱的陣列
 const allCategoriesData = ref([]); // 用來存放所有類別的資料
 
 const fetchCategoryByUser = async () => {
-  const response = await axios.get(
-    `${process.env.VUE_APP_BACKEND_API_URL}/category/getCategories`,
-    {
-      withCredentials: true,
-      signal: cleanupController.signal,
-    }
-  );
+  await wrap(async () => {
+    const response = await axios.get(
+      `${process.env.VUE_APP_BACKEND_API_URL}/category/getCategories`,
+      {
+        withCredentials: true,
+        signal: cleanupController.signal,
+      }
+    );
 
-  selectItems = response.data.categories.map((category) => category.name);
-  allCategoriesData.value = response.data.categories;
+    selectItems = response.data.categories.map((category) => category.name);
+    allCategoriesData.value = response.data.categories;
+  });
   console.log('allCategoriesData.value: ', allCategoriesData.value);
 };
 
@@ -431,35 +436,37 @@ async function deleteRecord(record) {
   console.log('record', record);
   if (confirm('確定要刪除這筆記帳嗎？')) {
     // 找到v-select選取的category所對應的Object
-    const findTheCategoryObjecte = computed(() => {
-      return allCategoriesData.value.find(
-        (item) => item.name === record.category
-      );
-    });
-    console.log('findTheCategoryObjecte: ', findTheCategoryObjecte.value);
-
-    await axios
-      .delete(
-        `${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecordByBook`,
-        {
-          params: {
-            recordId: record._id,
-            bookId: TransactionStore.selectedBook,
-            categoryId: findTheCategoryObjecte.value._id,
-            isIncome: record.isIncome,
-            amount: record.amount,
-          },
-          withCredentials: true,
-        }
-      )
-      .then((response) => {
-        console.log('刪除成功:', response.data);
-        // 刪除後重新獲取記帳資料
-        fetchRecordsByBook(TransactionStore.selectedBook);
-      })
-      .catch((error) => {
-        console.error('刪除失敗:', error);
+    await wrap(async () => {
+      const findTheCategoryObjecte = computed(() => {
+        return allCategoriesData.value.find(
+          (item) => item.name === record.category
+        );
       });
+      console.log('findTheCategoryObjecte: ', findTheCategoryObjecte.value);
+
+      await axios
+        .delete(
+          `${process.env.VUE_APP_BACKEND_API_URL}/test/deleteRecordByBook`,
+          {
+            params: {
+              recordId: record._id,
+              bookId: TransactionStore.selectedBook,
+              categoryId: findTheCategoryObjecte.value._id,
+              isIncome: record.isIncome,
+              amount: record.amount,
+            },
+            withCredentials: true,
+          }
+        )
+        .then((response) => {
+          console.log('刪除成功:', response.data);
+          // 刪除後重新獲取記帳資料
+          fetchRecordsByBook(TransactionStore.selectedBook);
+        })
+        .catch((error) => {
+          console.error('刪除失敗:', error);
+        });
+    });
   }
 }
 </script>

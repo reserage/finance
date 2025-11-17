@@ -31,7 +31,9 @@
             v-model="form.category"
             label="類別"
             :items="
-              props.allCategoriesData.filter((item) => item.isIncome === form.isIncome)
+              props.allCategoriesData.filter(
+                (item) => item.isIncome === form.isIncome
+              )
             "
             item-title="name"
             item-value="name"
@@ -48,6 +50,10 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-overlay :model-value="loading" opacity="0.6">
+    <v-progress-circular indeterminate size="64" color="primary" />
+  </v-overlay>
 </template>
 
 <script setup>
@@ -62,6 +68,8 @@ import {
   computed,
 } from 'vue';
 import useExchangeRate from '@/composables/useExchangeRate';
+import { useLoading } from '@/composables/useLoading';
+const { loading, wrap } = useLoading();
 
 const { supportedCurrencies, getExchangeRateByDate } = useExchangeRate();
 
@@ -116,43 +124,46 @@ const submitForm = async () => {
 
   // 關閉 dialog
   isShowDialogForm.value = false;
-  try {
-    const response = await axios.post(
-      `${process.env.VUE_APP_BACKEND_API_URL}/test/addRecordByBook`,
-      {
-        category: form.value.category,
-        amount: form.value.amount,
-        note: form.value.note,
-        date: form.value.date,
-        isIncome: form.value.isIncome,
-        bookId: TransactionStore.selectedBook,
-        categoryId: findTheCategoryObjecte.value._id,
-        currencyCode: code,
-        rate:
-          code === 'TWD'
-            ? 1
-            : (
-                await getExchangeRateByDate('TWD', form.value.date)
-              ).rates[code],
-      },
-      {
-        withCredentials: true,
+
+  await wrap(async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.VUE_APP_BACKEND_API_URL}/test/addRecordByBook`,
+        {
+          category: form.value.category,
+          amount: form.value.amount,
+          note: form.value.note,
+          date: form.value.date,
+          isIncome: form.value.isIncome,
+          bookId: TransactionStore.selectedBook,
+          categoryId: findTheCategoryObjecte.value._id,
+          currencyCode: code,
+          rate:
+            code === 'TWD'
+              ? 1
+              : (
+                  await getExchangeRateByDate('TWD', form.value.date)
+                ).rates[code],
+        },
+        {
+          withCredentials: true,
+        }
+      );
+      // console.log("findTheCategoryObject: ", findTheCategoryObjecte);
+      console.log('Response from API:', response.data);
+      emit('fetchRecordsByBook');
+    } catch (error) {
+      if (
+        error.response.data.message ===
+          'No exchange rate found for the given date' &&
+        error.response.status === 404
+      ) {
+        alert('該日期沒有匯率資料，請選擇其他日期');
+      } else {
+        alert('新增記帳失敗，請稍後再試');
       }
-    );
-    // console.log("findTheCategoryObject: ", findTheCategoryObjecte);
-    console.log('Response from API:', response.data);
-    emit('fetchRecordsByBook');
-  } catch (error) {
-    if (
-      error.response.data.message ===
-        'No exchange rate found for the given date' &&
-      error.response.status === 404
-    ) {
-      alert('該日期沒有匯率資料，請選擇其他日期');
-    } else {
-      alert('新增記帳失敗，請稍後再試');
     }
-  }
+  });
 
   // 清空表單
   form.value = {
