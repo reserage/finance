@@ -17,7 +17,7 @@
         <!-- 摘要區塊 -->
         <div class="col-12 col-lg-8 mb-4">
           <div class="summary bg-light p-3 border rounded text-center">
-            <div class="d-flex justify-content-evenly">
+            <div class="d-flex justify-content-evenly" v-if="!isNoData">
               <div class="expendtiure">
                 <h2>本月收入</h2>
                 <h3>{{ Number((currentMonthIncome || 0).toFixed(2)) }}</h3>
@@ -28,10 +28,11 @@
                 <h3>{{ Number((currentMonthExpenditure || 0).toFixed(2)) }}</h3>
               </div>
             </div>
+            <div v-else class="text-center">尚未記帳，無資料顯示</div>
           </div>
 
           <!-- top5類別區塊 -->
-          <div class="new card bg-light p-3 mt-4">
+          <div class="new card bg-light p-3 mt-4" v-if="!isNoData">
             <h3 class="card-title">高消費類別</h3>
             <div class="card-body">
               <div class="list-group list-group-flush">
@@ -50,7 +51,7 @@
         </div>
 
         <!-- 餅圖區塊 -->
-        <div class="col-12 col-lg-4 mb-4">
+        <div class="col-12 col-lg-4 mb-4" v-if="!isNoData">
           <div
             class="outsidePieChartContainer bg-light border rounded d-flex flex-column justify-content-center align-items-center p-3 h-100"
           >
@@ -63,7 +64,7 @@
         </div>
 
         <!-- 折線圖區塊 -->
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4" v-if="!isNoData">
           <div class="lineChart card bg-light p-3">
             <div
               class="card-title d-flex justify-content-between align-items-center"
@@ -111,7 +112,7 @@
 
         <!-- 預算對比區塊 -->
         <!-- 預算對比區塊 -->
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4" v-if="!isNoData">
           <div class="card bg-light p-3">
             <h2 class="card-title">預算對比</h2>
             <div class="card-body">
@@ -147,6 +148,8 @@ import axios from 'axios';
 import { useLoading } from '@/composables/useLoading';
 
 const { loading, wrap } = useLoading();
+
+let isNoData = ref(false);
 
 //*  ----------------- PieChart -------------------------
 let pieLabels = ref([]);
@@ -380,37 +383,51 @@ onMounted(async () => {
 
 watch(selectedDate, async (newValue) => {
   await wrap(async () => {
-    const response = await axios.get(
-      `${process.env.VUE_APP_BACKEND_API_URL}/statistics`,
-      {
-        params: { selectedDate: newValue },
-        withCredentials: true,
-      }
-    );
-    console.log('後端資料:', response.data);
-
-    const backendData = response.data.data;
-    currentMonthIncome.value = backendData.totalIncome;
-    currentMonthExpenditure.value = backendData.totalExpense;
-    highSpendingCategories.value = backendData.sorted;
-
-    hasBudget.value = response.data.data.budget.length > 0;
-    if (!hasBudget.value) {
-      categories.value = [];
-      budgetLimit.value = [];
-      actualExpense.value = [];
-    } else {
-      categories.value = response.data.data.budget.map(
-        (item) => item.categoryName
+    try {
+      const response = await axios.get(
+        `${process.env.VUE_APP_BACKEND_API_URL}/statistics`,
+        {
+          params: { selectedDate: newValue },
+          withCredentials: true,
+        }
       );
-      budgetLimit.value = response.data.data.budget.map((item) => item.budget);
-      actualExpense.value = response.data.data.budget.map((item) => item.total);
+
+      console.log('後端資料:', response.data);
+
+      const backendData = response.data.data;
+      currentMonthIncome.value = backendData.totalIncome;
+      currentMonthExpenditure.value = backendData.totalExpense;
+      highSpendingCategories.value = backendData.sorted;
+
+      hasBudget.value = response.data.data.budget.length > 0;
+      if (!hasBudget.value) {
+        categories.value = [];
+        budgetLimit.value = [];
+        actualExpense.value = [];
+      } else {
+        categories.value = response.data.data.budget.map(
+          (item) => item.categoryName
+        );
+        budgetLimit.value = response.data.data.budget.map(
+          (item) => item.budget
+        );
+        actualExpense.value = response.data.data.budget.map(
+          (item) => item.total
+        );
+      }
+
+      pieLabels.value = backendData.sorted.map((item) => item[0]);
+      pieMoney.value = backendData.sorted.map((item) => item[1]);
+
+      getAndSetLineChartData(spendingTrendRadio.value, newValue);
+    } catch (error) {
+      if (error.response.status === 400 && error.response.data.message == 'No selectedDate provided') {
+        isNoData.value = true;
+      } else {
+        console.log('請求失敗：', error.message);
+      }
+      return;
     }
-
-    pieLabels.value = backendData.sorted.map((item) => item[0]);
-    pieMoney.value = backendData.sorted.map((item) => item[1]);
-
-    getAndSetLineChartData(spendingTrendRadio.value, newValue);
   });
 });
 
