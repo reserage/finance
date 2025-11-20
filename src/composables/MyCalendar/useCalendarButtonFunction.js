@@ -95,17 +95,16 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
       const { calInstance, dayCalInstance } =
         useCalendar().getCalendarInstances();
 
-      console.log('data to update:', data);
+      data.start = new Date(data.start).toISOString();
+      data.end = new Date(data.end).toISOString();
+      console.log('updateEvent data:', data);
 
       await axios.patch(
         `${process.env.VUE_APP_BACKEND_API_URL}/api/v1/calendar/${id}`,
         { ...data },
         { withCredentials: true }
       );
-      data.start = new Date(data.start);
-      data.end = new Date(data.end);
-
-      console.log('data after date conversion後:', data);
+      
 
       calInstance.updateEvent(data.id, data.calendarId, data);
       dayCalInstance.updateEvent(data.id, data.calendarId, data);
