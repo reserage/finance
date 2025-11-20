@@ -274,7 +274,7 @@ const dayCurrentDateText = ref('');
 const calendarView = ref('月');
 const dialog = ref(false);
 const vDialogTitleText = ref('新增事件');
-const isEditing = ref(false)
+const isEditing = ref(false);
 let isAddingEvent = true;
 const navModel = ref(false);
 
@@ -423,19 +423,24 @@ watch(dialog, (newValue) => {
     isEditing.value = false;
     isAddingEvent = true;
     vDialogTitleText.value = '新增事件';
-    shouldResetTime = 0;
     resetEventForm();
+    console.log('將shouldResetTime歸零');
+    shouldResetTime = 0;
   }
 });
 
 watch(
   () => eventForm.value.isAllday,
   () => {
-    if(shouldResetTime !== 0){
-      eventForm.value.start = '';
-      eventForm.value.end = '';
+    console.log('進入watch');
+    console.log('shouldResetTime:', shouldResetTime);
+    if (isEditing.value) {
+      if (shouldResetTime !== 0) {
+        eventForm.value.start = '';
+        eventForm.value.end = '';
+      }
+      shouldResetTime += 1;
     }
-    shouldResetTime += 1;
   }
 );
 
