@@ -100,9 +100,10 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
         { ...data },
         { withCredentials: true }
       );
+      data.start = new Date(data.start);
+      data.end = new Date(data.end);
 
       calInstance.updateEvent(data.id, data.calendarId, data);
-
       dayCalInstance.updateEvent(data.id, data.calendarId, data);
 
       dialog.value = false;
