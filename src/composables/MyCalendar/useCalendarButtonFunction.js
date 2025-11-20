@@ -14,61 +14,59 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
   //! 每次呼叫 create Event API 時都刷新一次畫面
 
   async function submitEvent() {
-  await wrap(async () => {
+    await wrap(async () => {
+      if (
+        !eventForm.value.title ||
+        !eventForm.value.start ||
+        !eventForm.value.end ||
+        eventForm.value.calendarId === null
+      ) {
+        window.alert('請填寫所有必填欄位');
+        return;
+      }
 
-    if (
-      !eventForm.value.title ||
-      !eventForm.value.start ||
-      !eventForm.value.end ||
-      eventForm.value.calendarId === null
-    ) {
-      window.alert('請填寫所有必填欄位');
-      return;
-    }
+      try {
+        // 先送到後端，得到真正的 _id
+        const res = await api.post(
+          `/calendar`,
+          {
+            title: eventForm.value.title,
+            calendarId: eventForm.value.calendarId,
+            start: new Date(eventForm.value.start).toISOString(),
+            end: new Date(eventForm.value.end).toISOString(),
+            isAllday: eventForm.value.isAllday,
+            category: eventForm.value.isAllday ? 'allday' : 'time',
+          },
+          { withCredentials: true }
+        );
 
-    try {
-      // 先送到後端，得到真正的 _id
-      const res = await api.post(
-        `/calendar`,
-        {
-          title: eventForm.value.title,
-          calendarId: eventForm.value.calendarId,
-          start: new Date(eventForm.value.start).toISOString(),
-          end: new Date(eventForm.value.end).toISOString(),
-          isAllday: eventForm.value.isAllday,
-          category: eventForm.value.isAllday ? 'allday' : 'time',
-        },
-        { withCredentials: true }
-      );
+        const created = res.data.data.event;
 
-      const created = res.data.data.event;
+        // 用後端回傳的 _id 新增事件（不再使用 timestamp）
+        const trueEvent = {
+          id: created._id, // ← 真正的ID！
+          calendarId: created.calendarId,
+          title: created.title,
+          start: new Date(created.start),
+          end: new Date(created.end),
+          isAllday: created.isAllday,
+          category: created.category,
+          backgroundColor: created.isDone ? '#E0E0E0' : undefined,
+        };
 
-      // 用後端回傳的 _id 新增事件（不再使用 timestamp）
-      const trueEvent = {
-        id: created._id,            // ← 真正的ID！
-        calendarId: created.calendarId,
-        title: created.title,
-        start: created.start,
-        end: created.end,
-        isAllday: created.isAllday,
-        category: created.category,
-        backgroundColor: created.isDone ? '#E0E0E0' : undefined,
-      };
+        const { calInstance, dayCalInstance } =
+          useCalendar().getCalendarInstances();
 
-      const { calInstance, dayCalInstance } =
-        useCalendar().getCalendarInstances();
+        // 直接放到前端日曆（用真ID）
+        calInstance.createEvents([trueEvent]);
+        dayCalInstance.createEvents([trueEvent]);
 
-      // 直接放到前端日曆（用真ID）
-      calInstance.createEvents([trueEvent]);
-      dayCalInstance.createEvents([trueEvent]);
-
-      dialog.value = false;
-
-    } catch (error) {
-      console.warn('submitEvent 捕捉到錯誤:', error.message);
-    }
-  });
-}
+        dialog.value = false;
+      } catch (error) {
+        console.warn('submitEvent 捕捉到錯誤:', error.message);
+      }
+    });
+  }
 
   async function deleteEvent() {
     wrap(async () => {
