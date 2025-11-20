@@ -278,7 +278,7 @@ const isEditing = ref(false)
 let isAddingEvent = true;
 const navModel = ref(false);
 
-let countIsAllday = 0;
+let shouldResetTime = 0;
 
 const {
   eventForm,
@@ -423,7 +423,7 @@ watch(dialog, (newValue) => {
     isEditing.value = false;
     isAddingEvent = true;
     vDialogTitleText.value = '新增事件';
-    countIsAllday = 0;
+    shouldResetTime = 0;
     resetEventForm();
   }
 });
@@ -431,11 +431,11 @@ watch(dialog, (newValue) => {
 watch(
   () => eventForm.value.isAllday,
   () => {
-    if(countIsAllday !== 0){
+    if(shouldResetTime !== 0){
       eventForm.value.start = '';
       eventForm.value.end = '';
     }
-    countIsAllday += 1;
+    shouldResetTime += 1;
   }
 );
 
