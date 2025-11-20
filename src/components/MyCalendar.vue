@@ -328,8 +328,8 @@ onMounted(async () => {
     console.log('更動內容:', changes);
 
     let updatedEvent = { ...event };
-    updatedEvent.start = formatDateForInput(changes.start, event.isAllday);
-    updatedEvent.end = formatDateForInput(changes.end, event.isAllday);
+    // updatedEvent.start = formatDateForInput(changes.start, event.isAllday);
+    // updatedEvent.end = formatDateForInput(changes.end, event.isAllday);
 
     updateEvent(updatedEvent.id, updatedEvent);
   });
@@ -385,14 +385,14 @@ onMounted(() => {
     // 例如把更新傳回後端
 
     let updatedEvent = { ...event };
-    updatedEvent.start = formatDateForInput(
-      changes.start == undefined ? event.start : changes.start,
-      event.isAllday
-    );
-    updatedEvent.end = formatDateForInput(
-      changes.end == undefined ? event.end : changes.end,
-      event.isAllday
-    );
+    // updatedEvent.start = formatDateForInput(
+    //   changes.start == undefined ? event.start : changes.start,
+    //   event.isAllday
+    // );
+    // updatedEvent.end = formatDateForInput(
+    //   changes.end == undefined ? event.end : changes.end,
+    //   event.isAllday
+    // );
 
     updateEvent(updatedEvent.id, updatedEvent);
   });
