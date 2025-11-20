@@ -15,12 +15,7 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
 
   async function submitEvent() {
     await wrap(async () => {
-      if (
-        !eventForm.value.title ||
-        !eventForm.value.start ||
-        !eventForm.value.end ||
-        eventForm.value.calendarId === null
-      ) {
+      if(!verifyEventForm()) {
         window.alert('請填寫所有必填欄位');
         return;
       }
@@ -92,6 +87,11 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
 
   async function updateEvent(id, data) {
     wrap(async () => {
+      if(!verifyEventForm()) {
+        window.alert('請填寫所有必填欄位');
+        return;
+      }
+
       const { calInstance, dayCalInstance } =
         useCalendar().getCalendarInstances();
 
@@ -104,7 +104,6 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
         { ...data },
         { withCredentials: true }
       );
-      
 
       calInstance.updateEvent(data.id, data.calendarId, data);
       dayCalInstance.updateEvent(data.id, data.calendarId, data);
@@ -137,6 +136,19 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
 
       dialog.value = false;
     });
+  }
+
+  function verifyEventForm() {
+    console.log('Verifying event form:', eventForm.value);
+    if (
+      !eventForm.value.title ||
+      !eventForm.value.start ||
+      !eventForm.value.end ||
+      eventForm.value.calendarId === null
+    ) {
+      return false;
+    }
+    return true;
   }
 
   return { submitEvent, deleteEvent, updateEvent, compeleteEvent };

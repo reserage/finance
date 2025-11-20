@@ -274,8 +274,11 @@ const dayCurrentDateText = ref('');
 const calendarView = ref('月');
 const dialog = ref(false);
 const vDialogTitleText = ref('新增事件');
+const isEditing = ref(false)
 let isAddingEvent = true;
 const navModel = ref(false);
+
+let countIsAllday = 0;
 
 const {
   eventForm,
@@ -359,6 +362,7 @@ onMounted(() => {
     console.log('使用者點了事件:', info);
     const event = info.event;
 
+    console.log('assign前的eventForm:', eventForm.value);
     Object.assign(eventForm.value, {
       id: event.id,
       title: event.title,
@@ -369,7 +373,9 @@ onMounted(() => {
       location: event.location,
       body: event.body,
     });
+    console.log('assign後的eventForm:', eventForm.value);
 
+    isEditing.value = true;
     isAddingEvent = false;
     dialog.value = true;
   });
@@ -414,11 +420,24 @@ watch(navModel, (newValue) => {
 
 watch(dialog, (newValue) => {
   if (newValue === false) {
+    isEditing.value = false;
     isAddingEvent = true;
     vDialogTitleText.value = '新增事件';
+    countIsAllday = 0;
     resetEventForm();
   }
 });
+
+watch(
+  () => eventForm.value.isAllday,
+  () => {
+    if(countIsAllday !== 0){
+      eventForm.value.start = '';
+      eventForm.value.end = '';
+    }
+    countIsAllday += 1;
+  }
+);
 
 function closeDayCalendar() {
   navModel.value = false;
