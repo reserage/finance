@@ -153,9 +153,9 @@ const { loading, wrap } = useLoading();
 
 const bookInfo = ref([]);
 
-// 真正的年份數據應該從後端獲取，這裡僅作為範例
-const years = ['2020', '2021', '2022', '2023', '2024', '2025'];
-const year = ref('2025');
+
+const years = ref([]);
+const year = ref('');
 
 // info: 當點擊記帳本時 的動作 -------------------
 const TransactionStore = useTransactionStore();
@@ -374,8 +374,9 @@ async function getBook() {
     }
   });
 }
-onMounted(() => {
-  getBook();
+onMounted(async () => {
+  await getBook();
+  await fetchYears();
 });
 
 // info: 其他東西
@@ -390,6 +391,14 @@ onMounted(async () => {
   );
   console.log('response', response);
 });
+
+async function fetchYears() {
+  const res = await axios.get(`${process.env.VUE_APP_BACKEND_API_URL}/bookKeeping/years`, {
+    withCredentials: true,
+  });
+  years.value = res.data;
+  year.value = years.value[years.value.length - 1];
+}
 </script>
 
 <style scoped>
