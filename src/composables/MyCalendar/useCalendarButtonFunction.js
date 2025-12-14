@@ -20,6 +20,12 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
         return;
       }
 
+      if(new Date(eventForm.value.start).getTime() >= new Date(eventForm.value.end).getTime()) {
+        console.log('開始時間:', eventForm.value.start, '結束時間:', eventForm.value.end);
+        window.alert('結束時間必須晚於開始時間');
+        return;
+      }
+
       try {
         // 先送到後端，得到真正的 _id
         const res = await api.post(
