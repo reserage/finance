@@ -31,6 +31,8 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
             end: new Date(eventForm.value.end).toISOString(),
             isAllday: eventForm.value.isAllday,
             category: eventForm.value.isAllday ? 'allday' : 'time',
+            location: eventForm.value.location,
+            body: eventForm.value.body,
           },
           { withCredentials: true }
         );
@@ -46,6 +48,8 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
           end: new Date(created.end),
           isAllday: created.isAllday,
           category: created.category,
+          location: created.location,
+          body: created.body,
           backgroundColor: created.isDone ? '#E0E0E0' : undefined,
         };
 
