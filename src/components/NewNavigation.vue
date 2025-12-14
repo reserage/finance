@@ -38,7 +38,7 @@
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi-calendar"
-        title="日歷"
+        title="日曆"
         value="CalendarView"
         v-if="isAuthenticated"
         @click="currentView = 'CalendarView'"
