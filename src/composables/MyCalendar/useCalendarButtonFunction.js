@@ -15,13 +15,25 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
 
   async function submitEvent() {
     await wrap(async () => {
-      if(!verifyEventForm()) {
+      if (!verifyEventForm()) {
         window.alert('請填寫所有必填欄位');
         return;
       }
 
-      if(new Date(eventForm.value.start).getTime() >= new Date(eventForm.value.end).getTime()) {
-        console.log('開始時間:', eventForm.value.start, '結束時間:', eventForm.value.end);
+      if (
+        (new Date(eventForm.value.start).getTime() >=
+          new Date(eventForm.value.end).getTime() &&
+          !eventForm.value.isAllday) ||
+        (eventForm.value.isAllday &&
+          new Date(eventForm.value.start).getTime() >
+            new Date(eventForm.value.end).getTime())
+      ) {
+        console.log(
+          '開始時間:',
+          eventForm.value.start,
+          '結束時間:',
+          eventForm.value.end
+        );
         window.alert('結束時間必須晚於開始時間');
         return;
       }
@@ -97,7 +109,7 @@ export default function useCalendarButtonFunction(eventForm, dialog, wrap) {
 
   async function updateEvent(id, data) {
     wrap(async () => {
-      if(!verifyEventForm()) {
+      if (!verifyEventForm()) {
         window.alert('請填寫所有必填欄位');
         return;
       }
