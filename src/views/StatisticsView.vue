@@ -100,7 +100,6 @@
             </div>
 
             <div class="line-chart-container card-body" style="height: 300px">
-              <!-- 這個圖有問題， -->
               <PieChart
                 :chart-data="lineData"
                 :chart-options="lineOptions"
@@ -355,15 +354,17 @@ onMounted(async () => {
         budgetLimit.value = [];
         actualExpense.value = [];
       } else {
-        categories.value = response.data.allData.data.budget.map(
-          (item) => item.categoryName
+        const filteredArray = response.data.allData.data.budget.filter(
+          (item) => item.categoryName !== '未知分類'
         );
-        budgetLimit.value = response.data.allData.data.budget.map(
-          (item) => item.budget
-        );
-        actualExpense.value = response.data.allData.data.budget.map(
-          (item) => item.total
-        );
+
+        console.log('filteredArray:', filteredArray);
+
+        categories.value = filteredArray.map((item) => item.categoryName);
+
+        budgetLimit.value = filteredArray.map((item) => item.budget);
+
+        actualExpense.value = filteredArray.map((item) => item.total);
       }
 
       // 給要用到的資料賦值
@@ -371,6 +372,7 @@ onMounted(async () => {
       currentMonthIncome.value = backendData.totalIncome;
       currentMonthExpenditure.value = backendData.totalExpense;
       highSpendingCategories.value = backendData.sorted;
+      console.log('backendData:', backendData);
       pieLabels.value = backendData.sorted.map((item) => item[0]);
       pieMoney.value = backendData.sorted.map((item) => item[1]);
 
@@ -405,15 +407,12 @@ watch(selectedDate, async (newValue) => {
         budgetLimit.value = [];
         actualExpense.value = [];
       } else {
-        categories.value = response.data.data.budget.map(
-          (item) => item.categoryName
+        const filteredArray = response.data.data.budget.filter(
+          (item) => item.categoryName !== '未知分類'
         );
-        budgetLimit.value = response.data.data.budget.map(
-          (item) => item.budget
-        );
-        actualExpense.value = response.data.data.budget.map(
-          (item) => item.total
-        );
+        categories.value = filteredArray.map((item) => item.categoryName);
+        budgetLimit.value = filteredArray.map((item) => item.budget);
+        actualExpense.value = filteredArray.map((item) => item.total);
       }
 
       pieLabels.value = backendData.sorted.map((item) => item[0]);
@@ -421,7 +420,10 @@ watch(selectedDate, async (newValue) => {
 
       getAndSetLineChartData(spendingTrendRadio.value, newValue);
     } catch (error) {
-      if (error.response.status === 400 && error.response.data.message == 'No selectedDate provided') {
+      if (
+        error.response.status === 400 &&
+        error.response.data.message == 'No selectedDate provided'
+      ) {
         isNoData.value = true;
       } else {
         console.log('請求失敗：', error.message);

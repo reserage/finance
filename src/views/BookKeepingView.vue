@@ -451,7 +451,10 @@ async function deleteRecord(record) {
             params: {
               recordId: record._id,
               bookId: TransactionStore.selectedBook,
-              categoryId: findTheCategoryObjecte.value._id,
+              categoryId:
+                findTheCategoryObjecte.value?._id == undefined
+                  ? ''
+                  : findTheCategoryObjecte.value._id,
               isIncome: record.isIncome,
               amount: record.amount,
             },
